@@ -23,7 +23,10 @@ technical file. It is built by taking the engineering elements out of Keystone (
   `drizzle/` (audit trail append-only by trigger), sign-in through Clavis and roles read in `clavis.pub_acces`
   (`INGENIUM_ACCESS_FROM_CLAVIS`, fail closed; demo « View as »), roles `src/config/roles.ts` (Clavis keys
   `Ingenium.EngineeringLead`, `Engineer`, `Designer`, `DocumentController`, `Reader`, `Admin`), rights and project scope
-  `src/domain/rights.ts` + `src/server/dal/projects.ts` (outside the scope = 404), common shell of Norma 3.1 with the common
+  `src/domain/rights.ts` + `src/server/dal/projects.ts` (outside the scope = 404; ING-29 / ING-30: every role reads the projects
+  in progress, « My projects » = the team Keystone publishes, a project confidential in Keystone is seen by its team only —
+  rule `src/domain/confidential.ts`, applied in SQL by `projectVisibility`; Ingenium keeps no confidentiality flag nor member
+  list of its own, request DI-K5), common shell of Norma 3.1 with the common
   block `BaseNav` (Home « Ma discipline », My tasks, My approvals, My projects, Technical reference), sections Project
   (project switcher) / Technical reference / Administration; screen registry `src/config/screens.ts` (screens of later
   deliveries are navigable placeholders, `src/config/screen-content.ts`); My tasks / My approvals with the charter's
@@ -31,7 +34,7 @@ technical file. It is built by taking the engineering elements out of Keystone (
   `src/server/integrations/matrix/tasks.ts`); Keystone connector (`INGENIUM_KEYSTONE`, `src/server/integrations/keystone/`,
   job `keystone-sync`, « Read Keystone now » on `/admin/activity`); API skeleton `/api/v1/` (`src/domain/api.ts`); reference
   query `ingenium.pub_journal` (`src/server/publications/definitions.ts`, no `pub_` view in a migration); demo data set
-  `INGENIUM_SEED=demo` (Keystone's demo project codes HLT-026, NDC-031, EWA-051, PRS-038, WSA-044; people of demo.example).
+  `INGENIUM_SEED=demo` (Keystone's demo project codes HLT-026, NDC-031, EWA-051, PRS-038, WSA-044, and the confidential R&D project RDP-072; people of demo.example).
   Next: delivery 2 (engineering register, P&ID, drawings) once ING-04, ING-05, ING-09, ING-20, ING-21, ING-26 are answered.
 - Decided (27 Nov 2026): name **Ingenium** (ING-01), repository `Yhumiii27/Ingenium` created by the owner (ING-02),
   registered in Norma 3.1.0 (code `ingenium`, schema `ingenium`, role `ingenium_app`, ports 4000 / 4010, address

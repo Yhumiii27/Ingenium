@@ -26,7 +26,7 @@ const admin = async (q: string) => {
 
 describe('Keystone connector', () => {
   it('the demonstration seed ran the simulation once', async () => {
-    expect(await t.db.$count(projectMirror)).toBe(5);
+    expect(await t.db.$count(projectMirror)).toBe(6);
     expect(await t.db.$count(teamMirror)).toBeGreaterThan(5);
     expect(await t.db.$count(syncRuns)).toBe(1);
   });
@@ -34,7 +34,7 @@ describe('Keystone connector', () => {
   it('views not granted: « unavailable », the mirror kept, the run journalled with who asked', async () => {
     const r = await syncKeystone(t.db, { mode: 'views', requestedBy: { userId: (await t.db.execute(sql`select id from ingenium.users limit 1`)).rows[0].id as string, name: 'Paul Vasseur', role: 'admin' } });
     expect(r.outcome).toBe('unavailable');
-    expect(await t.db.$count(projectMirror)).toBe(5);
+    expect(await t.db.$count(projectMirror)).toBe(6);
     const [run] = await t.db.select().from(syncRuns).orderBy(sql`${syncRuns.startedAt} desc`).limit(1);
     expect(run).toMatchObject({ outcome: 'unavailable', rows: 0 });
     expect(await t.db.$count(auditEntries, sql`${auditEntries.area} = 'Connectors'`)).toBe(1);
@@ -53,7 +53,26 @@ describe('Keystone connector', () => {
     const r = await syncKeystone(t.db, { mode: 'views' });
     expect(r).toMatchObject({ outcome: 'ok', projects: 1, members: 1 });
     expect(await t.db.select().from(projectMirror)).toMatchObject([{ code: 'ABC-001', designOfficeNumber: '#101', source: 'keystone' }]);
-    expect(await t.db.select().from(teamMirror)).toMatchObject([{ email: 'personne.un@demo.example', discipline: 'electrical', assignment: 'planning:1' }]);
+    expect(await t.db.select().from(teamMirror)).toMatchObject([{ email: 'personne.un@demo.example', discipline: 'electrical', assignment: 'planning:1', origin: 'assignment' }]);
+  });
+
+  it('once Keystone publishes them: the confidentiality level and the whole team, stakeholders included (ING-29, ING-30, DI-K5)', async () => {
+    await admin(`alter table keystone.pub_projets add column confidentialite text;
+      insert into keystone.pub_projets values ('RDP-072', '#072', 'Banc R&D', 'R&D', 'Études', true, 'confidentiel');
+      update keystone.pub_projets set confidentialite = 'normal' where code = 'ABC-001';
+      create table keystone.pub_equipes_projets (projet_code text, matricule text, personne_nom text, email text, origine text, activite text);
+      insert into keystone.pub_equipes_projets values ('RDP-072', 'M1', 'Personne Un', null, 'affectation', 'Automatisme'),
+        ('RDP-072', 'M3', 'Personne Trois', 'personne.trois@demo.example', 'partie_prenante', 'Chef de projet');
+      grant select on all tables in schema keystone to ingenium_app;`);
+    const r = await syncKeystone(t.db, { mode: 'views' });
+    expect(r).toMatchObject({ outcome: 'ok', projects: 2, members: 2 });
+    const projects = await t.db.select().from(projectMirror).orderBy(projectMirror.code);
+    expect(projects.map((p) => [p.code, p.confidential])).toEqual([['ABC-001', false], ['RDP-072', true]]);
+    const team = await t.db.select().from(teamMirror).orderBy(teamMirror.assignment);
+    expect(team).toMatchObject([
+      { projectCode: 'RDP-072', email: 'personne.un@demo.example', origin: 'assignment', assignment: 'assignment:M1' },
+      { projectCode: 'RDP-072', email: 'personne.trois@demo.example', origin: 'stakeholder', assignment: 'stakeholder:M3' },
+    ]);
   });
 
   it('off: nothing read, nothing recorded', async () => {

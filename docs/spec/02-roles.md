@@ -18,8 +18,10 @@ plus par discipline.
 
 ## 2. Portée
 
-- Par **projet** : l'équipe nommée du projet, lue dans `keystone.pub_affectations` ; un responsable ingénierie voit tous
-  les projets de son périmètre.
+- Par **projet** (ING-29, ING-30) : l'équipe du projet publiée par Keystone (affectés à une tâche et parties prenantes,
+  `keystone.pub_equipes_projets`, à défaut `keystone.pub_affectations`) forme « Mes projets » ; chaque rôle lit en plus tous
+  les projets en cours (un projet clos : son équipe et les rôles `all_projects`). Un projet **confidentiel** dans Keystone
+  n'est vu que de son équipe, quel que soit le rôle.
 - Par **discipline** : un ingénieur écrit dans sa discipline et lit les autres.
 - Un objet hors périmètre est un **404** (Norma § 6) ; le contrôle se fait dans la couche d'accès aux données.
 - Lecture impossible de `clavis.pub_acces` = refus ; un rôle retiré dans Clavis vaut à la page suivante.

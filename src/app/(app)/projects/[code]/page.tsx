@@ -5,7 +5,7 @@ import { EmptyState } from '@/components/app/EmptyState';
 import { KeyValueList } from '@/components/app/KeyValueList';
 import { SectionCard } from '@/components/app/SectionCard';
 import { SCREEN_CONTENT } from '@/config/screen-content';
-import { DISCIPLINE_LABEL } from '@/domain/vocab';
+import { DISCIPLINE_LABEL, TEAM_ORIGIN_LABEL } from '@/domain/vocab';
 import s from '@/features/pages/pages.module.css';
 import { Placeholder } from '@/features/pages/placeholder';
 import { ProjectHeader, projectOrNotFound } from '@/features/pages/project';
@@ -26,20 +26,22 @@ export default async function ProjectSummaryPage({ params }: { params: Promise<{
               { k: t('Design office number'), v: p.designOfficeNumber ?? '—' },
               { k: t('Client'), v: p.client ?? '—' },
               { k: t('Phase'), v: p.phase ?? '—' },
+              { k: t('Confidentiality'), v: p.confidential ? t('Confidential: seen by the project team only') : t('Normal') },
               { k: t('Read on'), v: fmtInstant(p.syncedAt, lang) },
             ]}
           />
         </SectionCard>
-        <SectionCard title={t('Engineering team')} hint={t('keystone.pub_affectations')}>
+        <SectionCard title={t('Project team')} hint={t('Read in Keystone: assigned to a task or stakeholder')}>
           {p.team.length ? (
             <Table>
-              <thead><tr><Th>{t('Person')}</Th><Th>{t('Discipline')}</Th><Th>{t('Activity')}</Th></tr></thead>
+              <thead><tr><Th>{t('Person')}</Th><Th>{t('Discipline')}</Th><Th>{t('Activity')}</Th><Th>{t('On the team as')}</Th></tr></thead>
               <tbody>
                 {p.team.map((m, i) => (
                   <tr key={`${m.personName}-${i}`}>
                     <Td>{m.personName}</Td>
                     <Td>{m.discipline ? t(DISCIPLINE_LABEL[m.discipline]) : '—'}</Td>
                     <Td>{m.activity ?? '—'}</Td>
+                    <Td>{t(TEAM_ORIGIN_LABEL[m.origin])}</Td>
                   </tr>
                 ))}
               </tbody>

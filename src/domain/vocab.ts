@@ -14,6 +14,15 @@ export const DISCIPLINE_LABEL: Record<DisciplineCode, string> = {
 export const MIRROR_SOURCES = ['keystone', 'simulation'] as const;
 export type MirrorSource = (typeof MIRROR_SOURCES)[number];
 
+/**
+ * Why a person is on a project's team in Keystone (ING-30): assigned to a task of the planning, or named among the project's
+ * stakeholders (keystone.pub_equipes_projets `origine` 'affectation' | 'partie_prenante'; keystone.pub_affectations alone gives
+ * assignments only).
+ */
+export const TEAM_ORIGINS = ['assignment', 'stakeholder'] as const;
+export type TeamOrigin = (typeof TEAM_ORIGINS)[number];
+export const TEAM_ORIGIN_LABEL: Record<TeamOrigin, string> = { assignment: 'Assigned to a task', stakeholder: 'Stakeholder' };
+
 /** The readers of other tools that record their runs. */
 export const SYNC_SOURCES = ['keystone'] as const;
 export type SyncSource = (typeof SYNC_SOURCES)[number];

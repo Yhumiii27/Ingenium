@@ -18,6 +18,7 @@
 | DI-K1 | Keystone | gel des fonctions d'ingénierie, points transférés | 0 | ING-03 |
 | DI-K2 | Keystone | requêtes de référence des vues de reprise | 1 | ING-26 |
 | DI-K3 | Keystone | vue durable `pub_equipements_projet` | 1 | R-185 |
+| DI-K5 | Keystone (puis Matrix) | publier l'équipe complète des projets et leur niveau de confidentialité | 1 | ING-29, ING-30 |
 | DI-M2 | Matrix | vues de reprise `keystone.pub_reprise_*` et `pub_equipements_projet` | 1 | DI-K2, DI-K3 |
 | DI-X1 | Codex | client d'API de dépôt, lien de lecture | 2 | — |
 | DI-V1 | Vigie | Ingenium appelant des fonctions d'avancement et de demande | 2 | ING-13 |
@@ -122,6 +123,30 @@
 - **Raison** : R-185, chaque ligne de nomenclature, repère et livrable d'Ingenium se rattache à un équipement.
 - **Sans elle** : Ingenium ne sait pas à quel équipement se rattache une ligne ; nomenclature multi-équipements
   impossible.
+
+## DI-K5 · Keystone — Publier l'équipe complète des projets et leur confidentialité (ING-29, ING-30)
+
+- **Dépôt** : `Yhumiii27/Keystone` (la publication elle-même est définie et appliquée par Matrix, M-18 : entrée dans son
+  `REQUESTS.md` une fois la requête de référence prête).
+- **Demande** :
+  1. une colonne **en fin** de `keystone.pub_projets` : `confidentialite` (`'normal'` | `'confidentiel'`), le niveau que
+     Keystone donne à chaque projet, industriel ou R&D (décision du propriétaire du 27 nov. 2026 : « c'est donc Keystone qui
+     donnera le niveau de confidentialité à Ingenium et aux autres softs ») ;
+  2. une vue `keystone.pub_equipes_projets` : une ligne par projet et par personne de l'équipe — `projet_code`, `matricule`,
+     `personne_nom`, `email` (ou l'identifiant Clavis de la personne), `origine` (`'affectation'` : affectée à une tâche du
+     planning | `'partie_prenante'` : ajoutée à la liste des parties prenantes), `activite` ; pour un projet confidentiel,
+     exactement les personnes à qui le responsable du projet a ouvert l'accès ;
+  3. lecteur `ingenium_app` (lien de lecture déclaré à Matrix ; d'autres outils peuvent s'en servir : Codex pour ses
+     documents, Crucible…).
+- **Raison** : ING-30 (« Keystone publie qui fait partie de l'équipe des projets et les autres outils peuvent s'en servir ») et
+  ING-29 (un projet confidentiel n'apparaît qu'à son équipe). Ingenium ne garde ni indicateur de confidentialité ni liste de
+  membres : il lit les deux dans Keystone (miroir du connecteur, `src/server/integrations/keystone/sync.ts`), qui lit déjà
+  ces colonnes si elles existent (`select *`) et la vue si elle est accordée.
+- **Sans elle** : l'équipe se limite aux affectations de `keystone.pub_affectations` (les parties prenantes ne voient pas
+  leurs projets dans « Mes projets ») et **aucun projet n'est confidentiel** dans Ingenium : un projet R&D confidentiel de
+  Keystone y serait visible de tous tant qu'il est en cours. À traiter avant de brancher Ingenium sur les vues réelles
+  si un projet confidentiel existe.
+- **État** : brouillon, rien n'est envoyé sans le « validé » du propriétaire.
 
 ## DI-M2 · Matrix — Appliquer les vues de reprise
 

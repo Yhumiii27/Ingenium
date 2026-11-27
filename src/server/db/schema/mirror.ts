@@ -3,7 +3,7 @@
 // INGENIUM_KEYSTONE), and the journal of every read (sync_runs) shown on « Activity and integrations ».
 import { sql } from 'drizzle-orm';
 import { boolean, check, index, integer, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { DISCIPLINE_CODES, MIRROR_SOURCES, PG_FORMATS, SYNC_OUTCOMES, SYNC_SOURCES } from '@/domain/vocab';
+import { DISCIPLINE_CODES, MIRROR_SOURCES, PG_FORMATS, SYNC_OUTCOMES, SYNC_SOURCES, TEAM_ORIGINS } from '@/domain/vocab';
 import { ingenium } from './_schema';
 import { id, inList, matches, notBlank } from './_common';
 
@@ -21,6 +21,11 @@ export const projectMirror = ingenium.table('project_mirror', {
   open: boolean('open').notNull(),
   source: text('source').notNull(),
   syncedAt: timestamp('synced_at', { withTimezone: true }).notNull(),
+  /**
+   * Keystone's confidentiality level (`confidentialite` = 'confidentiel', ING-29 / owner 27 Nov 2026: Keystone gives it to every
+   * tool): seen by its team only. False while Keystone does not publish the column (request DI-K5).
+   */
+  confidential: boolean('confidential').notNull().default(false),
 }, (t) => [
   check('project_mirror_code_check', matches(t.code, PG_FORMATS.projectCode)),
   check('project_mirror_number_check', sql`${t.designOfficeNumber} is null or ${matches(t.designOfficeNumber, PG_FORMATS.designOfficeNumber)}`),
@@ -28,7 +33,11 @@ export const projectMirror = ingenium.table('project_mirror', {
   check('project_mirror_source_check', inList(t.source, MIRROR_SOURCES)),
 ]);
 
-/** The engineering team of a project (keystone.pub_affectations): who is on it, in which discipline. */
+/**
+ * The team of a project as Keystone publishes it (ING-30): keystone.pub_equipes_projets (assignments and stakeholders) when the
+ * view exists, else keystone.pub_affectations (assignments only) — who is on it, in which discipline. A person on it sees the
+ * project in Ingenium; for a confidential project, only they do.
+ */
 export const teamMirror = ingenium.table('team_mirror', {
   projectCode: text('project_code').notNull().references(() => projectMirror.code, { onDelete: 'cascade' }),
   /** Keystone's assignment id (`source:affectation_id`), the key of the row. */
@@ -42,6 +51,8 @@ export const teamMirror = ingenium.table('team_mirror', {
   discipline: text('discipline'),
   /** Activity as published (« Ingénierie électrique »), shown as is. */
   activity: text('activity'),
+  /** Assigned to a task or stakeholder of the project (ING-30). */
+  origin: text('origin').notNull().default('assignment'),
   source: text('source').notNull(),
   syncedAt: timestamp('synced_at', { withTimezone: true }).notNull(),
 }, (t) => [
@@ -52,6 +63,7 @@ export const teamMirror = ingenium.table('team_mirror', {
   check('team_mirror_email_check', sql`${t.email} is null or (${t.email} ~ '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+$' and ${t.email} = lower(${t.email}))`),
   check('team_mirror_discipline_check', sql`${t.discipline} is null or ${inList(t.discipline, DISCIPLINE_CODES)}`),
   check('team_mirror_source_check', inList(t.source, MIRROR_SOURCES)),
+  check('team_mirror_origin_check', inList(t.origin, TEAM_ORIGINS)),
 ]);
 
 /** Every read of another tool (connector runs): outcome and counts, never personal data. */

@@ -14,7 +14,7 @@ export async function GET(request: Request): Promise<Response> {
   const viewer = await getViewer();
   if (!can(viewer.roles, 'journal')) return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
   const f = parseJournalFilters(new URL(request.url).searchParams);
-  const { rows, truncated } = await journalExport(f);
+  const { rows, truncated } = await journalExport(viewer, f);
   await writeAudit(await getDb(), {
     actorName: viewer.name, actorUserId: viewer.userId, actorRole: viewer.role, objectRef: 'Journal', area: 'Administration',
     change: `journal exported: ${rows.length} entries${truncated ? ' (truncated)' : ''}${journalQuery({ ...f, page: 1 }) ? ` · ${journalQuery({ ...f, page: 1 }).slice(1)}` : ''}`,

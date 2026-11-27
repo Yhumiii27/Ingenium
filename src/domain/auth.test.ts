@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CLAVIS_ROLE, ROLE_KEYS, activeRoleOf } from '@/config/roles';
-import { can, inProjectScope } from './rights';
+import { can } from './rights';
 import { emailFromClaims, grantedRolesFromClavisAccess, isPublicPath, safeReturnTo, ingeniumRoleKeys } from './auth';
 
 describe('roles read in Clavis', () => {
@@ -25,13 +25,6 @@ describe('roles read in Clavis', () => {
 });
 
 describe('rights (ING-19, spec 02)', () => {
-  it('project scope: every project for the lead, the administrator and the readers; the team’s projects for the others', () => {
-    for (const r of ['engineering_lead', 'admin', 'reader'] as const) expect(inProjectScope([r], false)).toBe(true);
-    for (const r of ['engineer', 'designer', 'document_controller'] as const) {
-      expect(inProjectScope([r], false)).toBe(false);
-      expect(inProjectScope([r], true)).toBe(true);
-    }
-  });
   it('who does what', () => {
     expect(can(['engineering_lead'], 'validate_parts')).toBe(true);
     expect(can(['engineer'], 'validate_parts')).toBe(false);

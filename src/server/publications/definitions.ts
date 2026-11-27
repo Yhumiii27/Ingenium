@@ -12,7 +12,8 @@ export const D18_COLUMNS = ['ref_source', 'nature', 'quand', 'qui', 'qui_ref', '
 /**
  * ingenium.pub_journal — contract D18 v1: Ingenium's audit trail with the common columns, read by matrix_app for the unified
  * journal of the suite. `projet` is the Keystone code when the object is a project; `qui_matricule` stays null (Ingenium keeps
- * no employee number of its users).
+ * no employee number of its users). The entries of a project confidential in Keystone are never published (ING-29: such a
+ * project is seen by its team only).
  */
 export const PUB_JOURNAL = `SELECT 'audit_entries:' || a.id::text AS ref_source,
        'audit'::text                                       AS nature,
@@ -25,6 +26,7 @@ export const PUB_JOURNAL = `SELECT 'audit_entries:' || a.id::text AS ref_source,
        a.change                                            AS detail,
        CASE WHEN a.object_ref ~ '${PG_FORMATS.projectCode}' THEN a.object_ref END AS projet,
        NULL::text                                          AS qui_matricule
-FROM ingenium.audit_entries a`;
+FROM ingenium.audit_entries a
+WHERE NOT EXISTS (SELECT 1 FROM ingenium.project_mirror p WHERE p.confidential AND p.code = a.object_ref)`;
 
 export const PUBLICATIONS = { pub_journal: PUB_JOURNAL } as const;
