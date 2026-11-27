@@ -5,7 +5,7 @@
 import type { RoleKey } from '@/config/roles';
 
 export type Right =
-  | 'all_projects' // every Keystone project of the perimeter, not only those of the viewer's engineering team
+  | 'all_projects' // also the closed projects outside the viewer's team (every role sees the projects in progress, ING-29; never a confidential one)
   | 'engineering' // inputs, deliverables, imports, checks, BOM, P&ID tags of the viewer's discipline (delivery 2)
   | 'parts' // create a part and its technical data, drawings (delivery 3)
   | 'validate_parts' // validate a part, close a check, propose a release, ECO « engineering lead » key (deliveries 2–3)
@@ -19,21 +19,16 @@ const RIGHTS: Record<RoleKey, readonly Right[]> = {
   designer: ['parts'],
   document_controller: ['documents'],
   admin: ['all_projects', 'administration', 'journal'],
-  // Project leads, quality, purchasing, logistics and the directions read every project (spec 02 § 1); their decisions come
-  // through « My approvals ».
+  // Project leads, quality, purchasing, logistics and the directions read every non-confidential project (spec 02 § 1, ING-29);
+  // their decisions come through « My approvals ».
   reader: ['all_projects'],
 };
 
 /** True when one of the roles carries the right. */
 export const can = (roles: readonly RoleKey[], right: Right) => roles.some((r) => RIGHTS[r].includes(right));
 
-/**
- * Project scope (spec 02 § 2): every project with `all_projects`, otherwise the projects whose engineering team (read in
- * Keystone) names the viewer. Pure: the data layer filters with it, a project outside it is a 404.
- */
-export function inProjectScope(roles: readonly RoleKey[], onTeam: boolean): boolean {
-  return onTeam || can(roles, 'all_projects');
-}
+// The project scope (who sees which project, confidential projects included) is `projectVisible` of ./confidential.ts (ING-29),
+// applied in SQL by the data layer: a project outside it is a 404.
 
 /** Refusal message of a missing right (EN source string). */
 export const FORBIDDEN = 'You do not have the right to do this';

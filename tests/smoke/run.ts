@@ -45,7 +45,7 @@ async function main(): Promise<void> {
   for (const [path, text] of [
     ['/my/tasks', 'Toute la suite'], ['/my/tasks?vue=kanban', 'En cours'], ['/my/tasks?vue=calendrier', 'Calendrier'], ['/my/approvals', 'Mes approbations'],
     ['/my/projects', 'Harbor Line Terminal Expansion'], ['/reference', 'Articles'], ['/reference/parts', 'Livraison 3'], ['/reference/drawings', 'Ouvrir dans PDM'],
-    ['/projects/HLT-026', 'Équipe d’ingénierie'], ['/projects/HLT-026/pid', 'bon pour construction'], ['/projects/HLT-026/ce-file', 'Dossier technique CE'],
+    ['/projects/HLT-026', 'Équipe projet'], ['/projects/HLT-026/pid', 'bon pour construction'], ['/projects/HLT-026/ce-file', 'Dossier technique CE'],
     ['/admin/disciplines', 'Mécanique'], ['/admin/rules', 'Règles de cohérence'], ['/admin/activity', 'keystone.pub_projets'], ['/journal', 'Exporter (CSV)'],
   ] as const) {
     const r = await get(path, 'engineering_lead');
@@ -53,10 +53,17 @@ async function main(): Promise<void> {
   }
   check((await get('/projects', 'engineering_lead')).status === 307, '/projects leads to My projects');
 
-  // Project scope (spec 02 § 2): a discipline engineer sees the projects of their team only; a project outside it is a 404.
+  // Project scope (ING-29): every role opens a project in progress; a closed one outside the team and a confidential one
+  // outside its team are a 404 and never listed.
   check((await get('/projects/HLT-026', 'engineer')).status === 200, 'a discipline engineer opens a project of their team');
-  check((await get('/projects/NDC-031', 'engineer')).status === 404, 'a project outside the team is not found');
-  check((await get('/projects/NDC-031/pid', 'engineer')).status === 404, 'nor any of its screens');
+  check((await get('/projects/NDC-031', 'designer')).status === 200, 'every role opens a project in progress');
+  check((await get('/projects/WSA-044', 'designer')).status === 404, 'a closed project outside the team is not found');
+  check((await get('/projects/RDP-072', 'engineering_lead')).status === 404 && (await get('/projects/RDP-072/pid', 'admin')).status === 404, 'a confidential project is not found outside its team');
+  check((await get('/projects/RDP-072', 'engineer')).status === 200, 'its team opens it');
+  const mine = await get('/my/projects', 'designer');
+  const all = await get('/my/projects?projets=tous', 'designer');
+  check(!mine.body.includes('Northgate Data Center Retrofit') && all.body.includes('Northgate Data Center Retrofit'), '« My projects » by default, every project in progress without the filter');
+  check(!all.body.includes('Compact Separator Test Rig') && !(await get('/my/projects?projets=tous', 'admin')).body.includes('Compact Separator Test Rig'), 'a confidential project is never listed outside its team');
   check((await get('/projects/HLT-026/nothing', 'engineering_lead')).status === 404, 'an unknown project screen is not found');
   check((await get('/projects/ZZZ-999', 'engineering_lead')).status === 404, 'an unknown project is not found');
   check((await get('/admin/activity', 'engineer')).status === 404 && (await get('/journal', 'designer')).status === 404, 'the administration is closed to the other roles');

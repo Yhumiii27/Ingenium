@@ -40,10 +40,9 @@ puis `npm run test:smoke` contre `next start` (port 4010, ou un autre port libre
   registres de la livraison 2 ; la livraison 1 montre celles de toute la suite (`matrix.pub_taches`). En démonstration, des
   tâches fictives d'autres outils sont simulées, datées depuis le jour métier. Aucune décision ni déplacement depuis Ingenium
   (phase 1 du contrat `taches-v1` : « Ouvrir dans <outil> »).
-- **Membre d'équipe ↔ personne connectée** : `keystone.pub_affectations` publie le matricule, pas l'adresse ; Ingenium lit
-  l'adresse dans `clavis.pub_personnes` par le matricule. Sans elle, la personne ne retrouve pas ses projets (question ING-30).
-- **Portée des lecteurs** : un lecteur (chef de projet, qualité, achats, logistique, direction) voit tous les projets, comme
-  le responsable ingénierie et l'administrateur (question ING-29).
+- **Membre d'équipe ↔ personne connectée** : l'adresse publiée par Keystone (`pub_equipes_projets.email`), sinon celle de
+  `clavis.pub_personnes` par le matricule. Sans elle, la personne ne retrouve pas ses projets (ING-30, § 5).
+- **Portée** : voir § 5 (ING-29, réponse du propriétaire).
 - **Administration** : écrans visibles du responsable ingénierie et de l'administrateur ; « Lire maintenant » réservé à
   l'administrateur.
 - **`deploy/compose.shared.yaml`** n'a pas de valeur par défaut pour l'hôte et la base du serveur commun (Ingenium n'en écrit
@@ -67,6 +66,28 @@ Variables de l'application Coolify (noms) : `DATABASE_URL`, `INGENIUM_SINGLE_CON
 
 | Id | Question | Réponse par défaut appliquée | Autres choix |
 | --- | --- | --- | --- |
-| ING-29 | Portée des lecteurs (chefs de projet, qualité, achats, logistique, direction) | tous les projets, en lecture | seulement les projets dont ils sont l'équipe (Keystone) |
-| ING-30 | Rapprocher un membre d'équipe de Keystone et la personne connectée | par le matricule de `keystone.pub_affectations` et l'adresse de `clavis.pub_personnes` | Keystone publie l'identifiant Clavis (`personne_id`) dans `pub_affectations` (demande à Keystone) |
 | ING-31 | Tâches libres de « Mes tâches » (ING-25) | avec les registres, livraison 2 | dès une livraison 1 bis |
+
+## 5. Lot 1 bis — Liste des projets et projets confidentiels (ING-29, ING-30 ; 27 novembre 2026)
+
+Réponses du propriétaire du 27 novembre 2026 (texte dans `docs/DECISIONS.md` § 1).
+
+| Sujet | Où |
+| --- | --- |
+| Règle de visibilité, pure et testée : un projet confidentiel pour son équipe seulement, quel que soit le rôle ; un autre projet pour tous s'il est en cours, sinon pour son équipe et les rôles `all_projects` | `src/domain/confidential.ts` (`projectVisible`) |
+| La même règle en SQL dans la couche d'accès : un projet hors périmètre n'est jamais lu (listes, compteurs de l'Accueil, recherche ⌘K et sélecteur de projet de la barre latérale, pages : 404) | `src/server/dal/projects.ts` (`projectVisibility`) |
+| Journal et export CSV sans les entrées d'un projet confidentiel pour qui n'est pas de son équipe ; requête de référence de `ingenium.pub_journal` sans elles (à reprendre par Matrix avec DI-M1) | `src/server/dal/journal.ts` (`hiddenProjectCodes`), `src/server/publications/definitions.ts` |
+| « Mes projets » : filtre « Mes projets » par défaut, « Tous les projets en cours » sans filtre (`?projets=tous`, `FilterChips` de la charte dans la barre d'outils de l'en-tête), mention « Confidentiel » | `src/app/(app)/my/projects/page.tsx` |
+| Fiche projet : confidentialité, équipe projet avec son origine (affecté à une tâche, partie prenante) | `src/app/(app)/projects/[code]/page.tsx` |
+| Connecteur Keystone : `confidentialite` lue en fin de `keystone.pub_projets` si publiée (`select *`) ; équipe lue dans `keystone.pub_equipes_projets` (affectations et parties prenantes) si accordée, sinon `keystone.pub_affectations` ; jamais d'écriture dans Keystone | `src/domain/keystone.ts`, `src/server/integrations/keystone/sync.ts` |
+| Migration `0002_keystone_team_confidentiality` : `project_mirror.confidential` (faux par défaut), `team_mirror.origin` (`assignment` \| `stakeholder`, contrainte) | `drizzle/` |
+| Démonstration : projet R&D confidentiel **RDP-072** « Compact Separator Test Rig », équipe Anne Duval (partie prenante, chef de projet), Claire Renaud, Hugo Lemaire ; Marc Lenoir (responsable ingénierie), Paul Vasseur (administrateur) et Julien Faure ne le voient pas | `src/server/integrations/keystone/demo.ts` |
+
+- **Pas d'indicateur ni de liste propres à Ingenium** : Keystone donne le niveau de confidentialité et l'équipe (le
+  responsable du projet y ouvre l'accès) ; Ingenium les lit. Tant que Keystone ne publie ni `confidentialite` ni
+  `pub_equipes_projets` (brouillon **DI-K5**, `docs/DEMANDES.md`), aucun projet n'est confidentiel et l'équipe se limite aux
+  affectations.
+- Une base de démonstration déjà remplie reçoit RDP-072 confidentiel à la prochaine lecture de la simulation (tâche
+  `keystone-sync` ou « Lire Keystone maintenant »).
+- Le journal des lectures (`sync_runs`, écran Activité) compte les lignes lues dans Keystone, projets confidentiels compris,
+  sans jamais les nommer.

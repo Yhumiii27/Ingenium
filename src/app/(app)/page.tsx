@@ -18,6 +18,7 @@ import s from '@/features/pages/pages.module.css';
 import { fmtDate } from '@/lib/format';
 import { businessToday } from '@/server/clock';
 import { projectsInScope } from '@/server/dal/projects';
+import { projectFilterHref } from '@/domain/confidential';
 import { suiteTasksOf } from '@/server/dal/tasks';
 import { getI18n, getViewer } from '@/server/session';
 
@@ -44,7 +45,7 @@ export default async function HomePage() {
       <PageHeader screen="home" title={t('My discipline')} subtitle={`${viewer.name} · ${fmtDate(today, lang)}`} />
       <KpiGrid min={170}>
         <KpiTile size="lg" label={t('Projects of my team')} value={projects.filter((p) => p.mine).length} sub={`${projects.filter((p) => p.mine && p.open).length} ${t('open')}`} />
-        <KpiTile size="lg" label={t('Projects in my scope')} value={projects.length} sub={t('read in Keystone')} />
+        <KpiTile size="lg" label={t('Projects in progress')} value={projects.filter((p) => p.open).length} sub={t('read in Keystone')} />
         <KpiTile size="lg" label={t('Tasks to do')} value={open.filter((r) => r.nature === 'tache').length} sub={`${late.length} ${t('late')}`} tone={late.length ? 'alert' : 'default'} />
         <KpiTile size="lg" label={t('Approvals to decide')} value={open.filter((r) => r.nature === 'approbation').length} sub={t('whole suite')} />
       </KpiGrid>
@@ -84,6 +85,7 @@ export default async function HomePage() {
               <SectionCard key={p.code} variant="tinted" href={screenHref('projectSummary', { code: p.code })} title={projectLabel(p)} subtitle={p.name}>
                 <div className={s.tags}>
                   {p.phase && <Tag tone="outline" size="sm">{p.phase}</Tag>}
+                  {p.confidential && <Tag tone="accent-2" size="sm">{t('Confidential')}</Tag>}
                   {p.myDisciplines.map((d) => <Tag key={d} tone="accent" size="sm">{t(DISCIPLINE_LABEL[d])}</Tag>)}
                 </div>
                 <span className={s.muted}>
@@ -96,7 +98,7 @@ export default async function HomePage() {
           <EmptyState variant="boxed">{t('No project in your scope: Keystone’s projects appear once the connector has read them.')}</EmptyState>
         )}
         {projects.length > shown.length && (
-          <Link className={s.link} href={screenHref('myProjects')}>{t('Every project')} ({projects.length})</Link>
+          <Link className={s.link} href={projectFilterHref('all')}>{t('Every project in progress')} ({projects.filter((p) => p.open).length})</Link>
         )}
       </SectionCard>
     </>

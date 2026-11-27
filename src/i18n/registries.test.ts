@@ -8,7 +8,7 @@ import { SCREENS, SECTION_LABEL } from '@/config/screens';
 import { SIGN_IN_ERROR } from '@/domain/auth';
 import { JOURNAL_AREAS } from '@/domain/journal';
 import { FORBIDDEN } from '@/domain/rights';
-import { DISCIPLINE_LABEL } from '@/domain/vocab';
+import { DISCIPLINE_LABEL, TEAM_ORIGIN_LABEL } from '@/domain/vocab';
 import { CONNECTORS } from '@/server/integrations/connectors';
 import SAME from './same-in-french.json';
 import { makeT } from './translate';
@@ -21,7 +21,7 @@ describe('French of the registries', () => {
   it('screens, sections, roles, disciplines, journal areas', () => {
     expect(untranslated([
       ...SCREENS.map((s) => s.title), ...Object.values(SECTION_LABEL), ...Object.values(SCREEN_CONTENT).flat(), ...Object.values(ROLE_LABEL),
-      ...Object.values(DISCIPLINE_LABEL), ...JOURNAL_AREAS, FORBIDDEN, ...Object.values(SIGN_IN_ERROR),
+      ...Object.values(DISCIPLINE_LABEL), ...Object.values(TEAM_ORIGIN_LABEL), ...JOURNAL_AREAS, FORBIDDEN, ...Object.values(SIGN_IN_ERROR),
     ])).toEqual([]);
   });
   it('connectors and their messages', () => {

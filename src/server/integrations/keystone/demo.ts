@@ -1,5 +1,5 @@
-// Keystone as simulated in the demonstration (INGENIUM_KEYSTONE=simulation): rows shaped like keystone.pub_projets and
-// keystone.pub_affectations, on project codes of Keystone's own demonstration data set (HLT-026, NDC-031, EWA-051, PRS-038,
+// Keystone as simulated in the demonstration (INGENIUM_KEYSTONE=simulation): rows shaped like keystone.pub_projets (with the
+// `confidentialite` asked in DI-K5) and keystone.pub_equipes_projets (assignments and stakeholders, ING-30), on project codes of Keystone's own demonstration data set (HLT-026, NDC-031, EWA-051, PRS-038,
 // WSA-044). Entirely fictitious: names of demo.example only, never a real person, company or project. Never served on the
 // shared server (the mode `views` reads the real views).
 import { DEMO_COLLEAGUES, DEMO_PERSONAS } from '@/server/db/seed/personas';
@@ -18,10 +18,12 @@ export const KEYSTONE_DEMO_PROJECTS: readonly Record<string, unknown>[] = [
   { code: 'EWA-051', numero: '#051', nom: 'Eastbank Warehouse Automation', client: 'Logistics BU', phase: 'Fabrication', imputable: true },
   { code: 'PRS-038', numero: '#038', nom: 'Portside Rail Spur', client: 'Port authority', phase: 'Offre', imputable: true },
   { code: 'WSA-044', numero: '#044', nom: 'Westfield Solar Array', client: 'Energy BU', phase: 'Clos', imputable: false },
-];
+  // A confidential R&D project (ING-29): only its team sees it in Ingenium.
+  { code: 'RDP-072', numero: '#072', nom: 'Compact Separator Test Rig', client: 'R&D', phase: 'Études', imputable: true, categorie: 'rd', confidentialite: 'confidentiel' },
+].map((p) => ({ confidentialite: 'normal', ...p }));
 
-/** Assignments: [project, demo e-mail, activity]. */
-const TEAMS: readonly [string, string, string][] = [
+/** Team: [project, demo e-mail, activity, origin] — assigned to a task by default, or a stakeholder of the project. */
+const TEAMS: readonly [string, string, string, ('affectation' | 'partie_prenante')?][] = [
   ['HLT-026', 'marc.lenoir@demo.example', 'Responsable ingénierie'],
   ['HLT-026', 'claire.renaud@demo.example', 'Ingénierie process'],
   ['HLT-026', 'julien.faure@demo.example', 'Ingénierie mécanique'],
@@ -34,11 +36,15 @@ const TEAMS: readonly [string, string, string][] = [
   ['EWA-051', 'julien.faure@demo.example', 'Ingénierie mécanique'],
   ['EWA-051', 'claire.renaud@demo.example', 'Ingénierie process'],
   ['WSA-044', 'claire.renaud@demo.example', 'Ingénierie process'],
+  ['HLT-026', 'anne.duval@demo.example', 'Chef de projet', 'partie_prenante'],
+  ['RDP-072', 'anne.duval@demo.example', 'Chef de projet', 'partie_prenante'],
+  ['RDP-072', 'claire.renaud@demo.example', 'Ingénierie process'],
+  ['RDP-072', 'hugo.lemaire@demo.example', 'Automatisme'],
 ];
 
-export const KEYSTONE_DEMO_ASSIGNMENTS: readonly Record<string, unknown>[] = TEAMS.map(([projet_code, email, activite], i) => ({
-  source: 'planning', affectation_id: `demo-${String(i + 1).padStart(3, '0')}`, matricule: person(email).matricule,
-  personne_nom: person(email).name, projet_code, activite,
+/** Rows of keystone.pub_equipes_projets (e-mail left out: the connector reads it in clavis.pub_personnes by employee number). */
+export const KEYSTONE_DEMO_ASSIGNMENTS: readonly Record<string, unknown>[] = TEAMS.map(([projet_code, email, activite, origine = 'affectation']) => ({
+  projet_code, matricule: person(email).matricule, personne_nom: person(email).name, origine, activite,
 }));
 
 /** What clavis.pub_personnes would give for the simulated employee numbers (matricule → e-mail). */

@@ -22,7 +22,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
   const [{ t, lang }, viewer, sp] = await Promise.all([getI18n(), getViewer(), searchParams]);
   if (!can(viewer.roles, 'journal')) notFound();
   const f = parseJournalFilters(sp);
-  const { rows, total } = await journalPage(f);
+  const { rows, total } = await journalPage(viewer, f);
   const pages = Math.max(1, Math.ceil(total / JOURNAL_PAGE_SIZE));
   const fmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-GB', { dateStyle: 'short', timeStyle: 'medium', timeZone: 'Europe/Paris' });
   const exportHref = `/journal/export${journalQuery({ ...f, page: 1 })}`;

@@ -1,6 +1,6 @@
 import 'server-only';
 // Keystone connector (docs/spec/05 § 1): projects and engineering teams read in keystone.pub_projets and
-// keystone.pub_affectations (mode `views`, once Matrix grants the reading to ingenium_app — request DI-M1), or the fictitious rows of
+// keystone.pub_equipes_projets — or keystone.pub_affectations until Keystone publishes the whole team, ING-30 — (mode `views`, once Matrix grants the reading to ingenium_app — request DI-M1), or the fictitious rows of
 // ./demo.ts (mode `simulation`). The e-mail of a team member is read in clavis.pub_personnes by employee number, so the
 // signed-in person finds their projects. Writes only the mirror (project_mirror, team_mirror) and the journal of the run
 // (sync_runs); never writes to Keystone. A view that cannot be read is a state (« source unavailable »), never a page error:
@@ -14,7 +14,9 @@ import type { DB, Tx } from '@/server/db/types';
 import { log } from '@/server/log';
 import { KEYSTONE_DEMO_ASSIGNMENTS, KEYSTONE_DEMO_EMAILS, KEYSTONE_DEMO_PROJECTS } from './demo';
 
-export const KEYSTONE_VIEWS = { projects: 'keystone.pub_projets', assignments: 'keystone.pub_affectations', people: 'clavis.pub_personnes' } as const;
+export const KEYSTONE_VIEWS = {
+  projects: 'keystone.pub_projets', teams: 'keystone.pub_equipes_projets', assignments: 'keystone.pub_affectations', people: 'clavis.pub_personnes',
+} as const;
 
 export interface SyncResult {
   outcome: SyncOutcome | 'off';
@@ -41,8 +43,17 @@ export function simulatedKeystone(): { projects: MirrorProject[]; members: Mirro
 async function readSource(db: DB, mode: Exclude<ConnectorMode, 'off'>): Promise<{ projects: MirrorProject[]; members: MirrorMember[] }> {
   if (mode === 'simulation') return simulatedKeystone();
   let emails: ReadonlyMap<string, string>;
-  const projectRows = await rowsOf(db, KEYSTONE_VIEWS.projects, 'code, numero, nom, client, phase, imputable');
-  const assignmentRows = await rowsOf(db, KEYSTONE_VIEWS.assignments, 'source, affectation_id, matricule, personne_nom, projet_code, activite');
+  // `select *`: the columns Keystone adds at the end of its contract (confidentialite, DI-K5) are read when published, ignored
+  // otherwise (an absent column leaves the project « not confidential »).
+  const projectRows = await rowsOf(db, KEYSTONE_VIEWS.projects, '*');
+  // The whole team (assignments and stakeholders, ING-30) once Keystone publishes it; until then the assignments only.
+  let assignmentRows: Record<string, unknown>[];
+  try {
+    assignmentRows = await rowsOf(db, KEYSTONE_VIEWS.teams, '*');
+  } catch (e) {
+    log.info('keystone.pub_equipes_projets not read: team from keystone.pub_affectations', { component: 'keystone', error: e instanceof Error ? e.message : String(e) });
+    assignmentRows = await rowsOf(db, KEYSTONE_VIEWS.assignments, 'source, affectation_id, matricule, personne_nom, projet_code, activite');
+  }
   // The directory gives the e-mail of an employee number; without it the team is mirrored without e-mails.
   try {
     const people = await rowsOf(db, KEYSTONE_VIEWS.people, 'matricule, email');
@@ -62,7 +73,7 @@ export async function writeMirror(tx: Tx, rows: { projects: MirrorProject[]; mem
   await tx.delete(teamMirror);
   for (const p of rows.projects)
     await tx.insert(projectMirror).values({ ...p, source, syncedAt: at })
-      .onConflictDoUpdate({ target: projectMirror.code, set: { designOfficeNumber: p.designOfficeNumber, name: p.name, client: p.client, phase: p.phase, open: p.open, source, syncedAt: at } });
+      .onConflictDoUpdate({ target: projectMirror.code, set: { designOfficeNumber: p.designOfficeNumber, name: p.name, client: p.client, phase: p.phase, open: p.open, confidential: p.confidential, source, syncedAt: at } });
   const codes = rows.projects.map((p) => p.code);
   if (codes.length) await tx.delete(projectMirror).where(notInArray(projectMirror.code, codes));
   else await tx.delete(projectMirror);
