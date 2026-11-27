@@ -24,6 +24,8 @@ export interface ScreenDef {
   roles: readonly RoleKey[] | 'all';
   /** Delivery that builds the screen's content (docs/PLAN.md); until then the screen is a placeholder. */
   delivery: 1 | 2 | 3 | 4;
+  /** Lot of the delivery that builds it (docs/DELIVERY-2.md: 2a register, 2b P&ID and import assistant, 2c drawings and PDM). */
+  lot?: string;
 }
 
 const ADMIN: readonly RoleKey[] = ['admin', 'engineering_lead'];
@@ -40,7 +42,7 @@ export const SCREENS: readonly ScreenDef[] = [
   { id: 'mechanical', path: '/projects/[code]/mechanical', title: 'Mechanical', section: 'project', roles: 'all', delivery: 2 },
   { id: 'electrical', path: '/projects/[code]/electrical', title: 'Electrical', section: 'project', roles: 'all', delivery: 2 },
   { id: 'automation', path: '/projects/[code]/automation', title: 'Automation', section: 'project', roles: 'all', delivery: 2 },
-  { id: 'pid', path: '/projects/[code]/pid', title: 'P&ID', section: 'project', roles: 'all', delivery: 2 },
+  { id: 'pid', path: '/projects/[code]/pid', title: 'P&ID', section: 'project', roles: 'all', delivery: 2, lot: '2b' },
   { id: 'bom', path: '/projects/[code]/bom', title: 'Bill of materials', section: 'project', roles: 'all', delivery: 3 },
   { id: 'interfaces', path: '/projects/[code]/interfaces', title: 'Interfaces', section: 'project', roles: 'all', delivery: 4 },
   { id: 'pack', path: '/projects/[code]/pack', title: 'Engineering pack', section: 'project', roles: 'all', delivery: 4 },
@@ -49,12 +51,12 @@ export const SCREENS: readonly ScreenDef[] = [
   { id: 'parts', path: '/reference/parts', title: 'Parts', section: 'reference', roles: 'all', delivery: 3 },
   { id: 'structures', path: '/reference/structures', title: 'Structures', section: 'reference', roles: 'all', delivery: 3 },
   { id: 'spares', path: '/reference/spares', title: 'Wear and spare parts', section: 'reference', roles: 'all', delivery: 3 },
-  { id: 'drawings', path: '/reference/drawings', title: 'Drawings (PDM)', section: 'reference', roles: 'all', delivery: 2 },
+  { id: 'drawings', path: '/reference/drawings', title: 'Drawings (PDM)', section: 'reference', roles: 'all', delivery: 2, lot: '2c' },
   { id: 'changes', path: '/reference/changes', title: 'Engineering changes', section: 'reference', roles: 'all', delivery: 3 },
 
   { id: 'disciplines', path: '/admin/disciplines', title: 'Disciplines and leads', section: 'admin', roles: ADMIN, delivery: 1 },
   { id: 'rules', path: '/admin/rules', title: 'Consistency rules', section: 'admin', roles: ADMIN, delivery: 2 },
-  { id: 'importTools', path: '/admin/import-tools', title: 'Import tools and mappings', section: 'admin', roles: ADMIN, delivery: 2 },
+  { id: 'importTools', path: '/admin/import-tools', title: 'Import tools and mappings', section: 'admin', roles: ADMIN, delivery: 2, lot: '2b' },
   { id: 'packTemplates', path: '/admin/pack-templates', title: 'Pack templates', section: 'admin', roles: ADMIN, delivery: 4 },
   { id: 'ceLists', path: '/admin/ce-lists', title: 'CE lists', section: 'admin', roles: ADMIN, delivery: 4 },
   { id: 'activity', path: '/admin/activity', title: 'Activity and integrations', section: 'admin', roles: ADMIN, delivery: 1 },

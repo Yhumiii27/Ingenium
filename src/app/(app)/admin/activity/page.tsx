@@ -10,7 +10,10 @@ import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { canSee } from '@/config/screens';
 import { can } from '@/domain/rights';
-import { readKeystoneNowAction } from '@/features/admin/actions';
+import { applyRegisterTransferAction, dryRunRegisterTransferAction, readKeystoneNowAction } from '@/features/admin/actions';
+import { TRANSFER_OBJECTS, TRANSFER_OBJECT_LABEL } from '@/domain/transfer';
+import { objectSwitchovers } from '@/server/db/schema';
+import { mirroredRegisterCount, transferRunsOf } from '@/server/integrations/keystone/register';
 import { fmtInstant } from '@/lib/format';
 import { getConfig } from '@/server/config';
 import { getDb } from '@/server/db/client';
@@ -24,7 +27,10 @@ export default async function ActivityPage() {
   const [{ t, lang }, viewer] = await Promise.all([getI18n(), getViewer()]);
   if (!canSee(viewer.roles, 'activity')) notFound();
   const cfg = getConfig();
-  const runs = await lastSyncRuns(await getDb(), 20);
+  const db = await getDb();
+  const [runs, switched, transfers, mirrored] = await Promise.all([lastSyncRuns(db, 20), db.select().from(objectSwitchovers), transferRunsOf(db, 'register'), mirroredRegisterCount(db)]);
+  const registerHeld = switched.some((x) => x.object === 'register');
+  const admin = can(viewer.roles, 'administration');
   const modeOf = (variable: string | null): string => {
     if (variable === 'INGENIUM_KEYSTONE') return t(MODE_LABEL[cfg.connectors.keystone]);
     if (variable === 'INGENIUM_SUITE_TASKS') return t(MODE_LABEL[cfg.connectors.suiteTasks]);
@@ -56,6 +62,47 @@ export default async function ActivityPage() {
             ))}
           </tbody>
         </Table>
+      </SectionCard>
+      <SectionCard title={t('Switch-over from Keystone')} hint={t('One source per object: Keystone until its switch-over, Ingenium afterwards (docs/spec/06)')}
+        actions={admin && !registerHeld && cfg.connectors.keystone !== 'off' ? (
+          <>
+            <ActionButton run={dryRunRegisterTransferAction} label="Dry run of the register" done="Dry run recorded" />
+            <ActionButton run={applyRegisterTransferAction} label="Switch the register over" done="Register held by Ingenium" variant="primary" />
+          </>
+        ) : undefined}
+      >
+        <Table>
+          <thead><tr><Th>{t('Object')}</Th><Th>{t('Held by')}</Th><Th>{t('Since')}</Th></tr></thead>
+          <tbody>
+            {TRANSFER_OBJECTS.map((o) => {
+              const sw = switched.find((x) => x.object === o);
+              return (
+                <tr key={o}>
+                  <Td>{t(TRANSFER_OBJECT_LABEL[o])}</Td>
+                  <Td nowrap><Tag size="xs" tone={sw ? 'accent' : 'outline'}>{sw ? 'Ingenium' : 'Keystone'}</Tag></Td>
+                  <Td nowrap>{sw ? `${fmtInstant(sw.switchedAt, lang)} · ${sw.byName}` : o === 'register' ? `${mirrored} ${t('deliverables mirrored from Keystone')}` : t('Later lot')}</Td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+        {transfers.length > 0 && (
+          <Table>
+            <thead><tr><Th>{t('Run')}</Th><Th>{t('Mode')}</Th><Th align="right">{t('Rows read')}</Th><Th align="right">{t('Refused')}</Th><Th>{t('Refusals')}</Th><Th>{t('By')}</Th></tr></thead>
+            <tbody>
+              {transfers.map((r) => (
+                <tr key={r.id}>
+                  <Td nowrap>{fmtInstant(r.occurredAt, lang)}</Td>
+                  <Td nowrap>{r.mode === 'applied' ? t('Applied') : t('Dry run')}</Td>
+                  <Td numeric align="right">{r.counts.read ?? 0}</Td>
+                  <Td numeric align="right">{r.refused}</Td>
+                  <Td>{r.refusals.length ? r.refusals.slice(0, 5).map((x) => `${x.key}: ${t(x.reason)}`).join(' · ') : '—'}</Td>
+                  <Td nowrap>{r.byName}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
       </SectionCard>
       <SectionCard title={t('Last reads of Keystone')}>
         {runs.length ? (

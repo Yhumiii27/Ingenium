@@ -35,7 +35,20 @@ technical file. It is built by taking the engineering elements out of Keystone (
   job `keystone-sync`, « Read Keystone now » on `/admin/activity`); API skeleton `/api/v1/` (`src/domain/api.ts`); reference
   query `ingenium.pub_journal` (`src/server/publications/definitions.ts`, no `pub_` view in a migration); demo data set
   `INGENIUM_SEED=demo` (Keystone's demo project codes HLT-026, NDC-031, EWA-051, PRS-038, WSA-044, and the confidential R&D project RDP-072; people of demo.example).
-  Next: delivery 2 (engineering register, P&ID, drawings) once ING-04, ING-05, ING-09, ING-20, ING-21, ING-26 are answered.
+- **Delivery 2, lot 2a (engineering register and tasks) is built** (27 Nov 2026, owner: « lance tous les dev qui sont en attente
+  sans action de ma part »; `docs/DELIVERY-2.md`, defaults of ING-04, ING-20, ING-26 applied, ING-31 to ING-35): pure rules
+  `src/domain/register.ts` (deliverable steps, reference revision of an input, computed list state, check steps, rights by
+  discipline, « who waits for what »), tables `src/server/db/schema/register.ts` / `transfer.ts` / `tasks.ts` (migrations
+  0003–0004: frozen revision immutable, revision history / changes / transfer runs append-only, no deletion of a row held by
+  Ingenium), reads `src/server/dal/register.ts`, Server Functions `src/features/register/actions.ts`, screens
+  `src/features/register/` (Summary, the four discipline screens, `/admin/rules`). **One source per object**: until the
+  register's switch-over its rows are Keystone's mirror (keystone.pub_reprise_registre_ingenierie, DI-K2; simulation in demo),
+  every write refuses; the switch-over is a transfer run, dry run then applied once (`src/domain/transfer.ts`,
+  `src/server/integrations/keystone/register.ts`, `/admin/activity`; table `object_switchovers`). The demo seed applies it.
+  Own tasks (`src/domain/own-tasks.ts`) and free tasks, projection `published_tasks` rewritten in every write transaction and by
+  the job `tasks-projection` (`src/server/tasks/projection.ts`), merged into My tasks / My approvals (`allTasksOf`); reference
+  queries `pub_taches` and `pub_avancement_ingenierie`; `INGENIUM_PUBLIC_URL` for the tasks' deep links. Next: lot 2b (P&ID,
+  import assistant, Codex connector), lot 2c (drawings mirror, PDM / 3DX connector).
 - Decided (27 Nov 2026): name **Ingenium** (ING-01), repository `Yhumiii27/Ingenium` created by the owner (ING-02),
   registered in Norma 3.1.0 (code `ingenium`, schema `ingenium`, role `ingenium_app`, ports 4000 / 4010, address
   `ingenium.projectdirection.fr`, logo `ToolLogo code="ingenium"`). Web only at first; local apps later.

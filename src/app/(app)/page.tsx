@@ -1,7 +1,7 @@
 // Home — « Ma discipline » (Norma 3.1, COQUE.md § 2 bis.2; default answer of ING-23): what waits for the person's discipline,
 // then one card per project of their engineering team, then the « To handle » box (first tasks and approvals of the whole
-// suite, linking to My tasks). The engineering registers (inputs, deliverables, checks, P&ID tags, parts, ECO keys) come with
-// deliveries 2 and 3: their tiles say so instead of showing an invented figure. Every figure is computed on display.
+// suite, linking to My tasks). The register's blocks (outdated inputs, deliverables to release, open checks) are computed from
+// lot 2a; P&ID tags, parts and ECO keys come with later lots and say so instead of showing an invented figure.
 import Link from 'next/link';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { dedupe, isLate, isOpen, sortTasks } from '@norma/charte/ds/task-rules';
@@ -13,33 +13,46 @@ import { KpiGrid, KpiTile } from '@/components/app/Kpi';
 import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { screenHref } from '@/config/screens';
-import { DISCIPLINE_CODES, DISCIPLINE_LABEL, projectLabel } from '@/domain/vocab';
+import { DISCIPLINE_LABEL, projectLabel, type DisciplineCode } from '@/domain/vocab';
+import { isOpenCheck } from '@/domain/register';
+import { derivedRegisters } from '@/server/dal/register';
+import { getDb } from '@/server/db/client';
 import s from '@/features/pages/pages.module.css';
 import { fmtDate } from '@/lib/format';
 import { businessToday } from '@/server/clock';
 import { projectsInScope } from '@/server/dal/projects';
 import { projectFilterHref } from '@/domain/confidential';
-import { suiteTasksOf } from '@/server/dal/tasks';
+import { allTasksOf } from '@/server/dal/tasks';
 import { getI18n, getViewer } from '@/server/session';
 
-/** The blocks of « Ma discipline » and the delivery that fills each (docs/PLAN.md). */
-const DISCIPLINE_BLOCKS: readonly { label: string; delivery: number }[] = [
-  { label: 'Blocking expected inputs', delivery: 2 },
-  { label: 'Deliverables to release this week', delivery: 2 },
-  { label: 'Open consistency checks', delivery: 2 },
-  { label: 'P&ID tags not tied to a part', delivery: 2 },
-  { label: 'Parts to validate', delivery: 3 },
-  { label: 'ECO keys expected', delivery: 3 },
+/** The blocks of « Ma discipline » filled by a later lot (docs/PLAN.md). */
+const LATER_BLOCKS: readonly { label: string; lot: string }[] = [
+  { label: 'P&ID tags not tied to a part', lot: '2b' },
+  { label: 'Parts to validate', lot: '3' },
+  { label: 'ECO keys expected', lot: '3' },
 ];
 
 export default async function HomePage() {
   const [{ t, lang }, viewer, today] = await Promise.all([getI18n(), getViewer(), businessToday()]);
-  const [projects, tasks] = await Promise.all([projectsInScope(viewer), suiteTasksOf(viewer, today)]);
+  const [projects, tasks] = await Promise.all([projectsInScope(viewer), allTasksOf(viewer, today)]);
   const mine = projects.filter((p) => p.mine && p.open);
   const shown = (mine.length ? mine : projects.filter((p) => p.open)).slice(0, 6);
   const open = dedupe(tasks.rows).filter(isOpen);
   const late = open.filter((r) => isLate(r, today));
   const toHandle = sortTasks(open).slice(0, 3);
+  // « Ma discipline » (lot 2a): computed on the registers of the viewer's projects, in their disciplines (every discipline for
+  // a person without one on the project, e.g. the engineering lead).
+  const registers = await derivedRegisters(await getDb(), shown.map((p) => p.code));
+  const inMine = (p: (typeof shown)[number], d: DisciplineCode) => !p.myDisciplines.length || p.myDisciplines.includes(d);
+  let waitingInputs = 0, toRelease = 0, openChecks = 0, blocking = 0;
+  for (const p of shown) {
+    const r = registers.get(p.code)!;
+    waitingInputs += r.inputs.filter((i) => i.state === 'outdated' && inMine(p, i.consumer)).length;
+    toRelease += r.deliverables.filter((d) => (d.status === 'frozen' || d.status === 'release_proposed') && inMine(p, d.discipline)).length;
+    const checks = r.checks.filter((c) => isOpenCheck(c.status) && inMine(p, c.owner));
+    openChecks += checks.length;
+    blocking += checks.filter((c) => c.severity === 'blocking').length;
+  }
   return (
     <>
       <PageHeader screen="home" title={t('My discipline')} subtitle={`${viewer.name} · ${fmtDate(today, lang)}`} />
@@ -50,11 +63,14 @@ export default async function HomePage() {
         <KpiTile size="lg" label={t('Approvals to decide')} value={open.filter((r) => r.nature === 'approbation').length} sub={t('whole suite')} />
       </KpiGrid>
       <div className={s.grid2}>
-        <SectionCard title={t('My discipline')} hint={t('Filled by the engineering registers')}>
+        <SectionCard title={t('My discipline')} hint={t('On the projects shown below, in my disciplines')}>
           <ul className={s.list}>
-            {DISCIPLINE_BLOCKS.map((b) => (
+            <li>{t('Outdated inputs')} · <strong>{waitingInputs}</strong></li>
+            <li>{t('Deliverables frozen, to release')} · <strong>{toRelease}</strong></li>
+            <li>{t('Open consistency checks')} · <strong>{openChecks}</strong>{blocking ? <span className={s.muted}> · {blocking} {t('blocking')}</span> : null}</li>
+            {LATER_BLOCKS.map((b) => (
               <li key={b.label}>
-                {t(b.label)} <span className={s.muted}>· {t('Delivery')} {b.delivery}</span>
+                {t(b.label)} <span className={s.muted}>· {t('lot')} {b.lot}</span>
               </li>
             ))}
           </ul>
@@ -78,7 +94,7 @@ export default async function HomePage() {
           {tasks.simulated && <Callout variant="compact">{t('Tasks of the other tools simulated (demonstration data set)')}</Callout>}
         </SectionCard>
       </div>
-      <SectionCard title={mine.length ? t('Projects of my team') : t('Open projects')} hint={t('Progress of the deliverables, P&ID coverage and engineering pack: delivery 2 to 4')}>
+      <SectionCard title={mine.length ? t('Projects of my team') : t('Open projects')} hint={t('Deliverables released by discipline; P&ID coverage and engineering pack: later lots')}>
         {shown.length ? (
           <div className={s.grid3}>
             {shown.map((p) => (
@@ -89,7 +105,10 @@ export default async function HomePage() {
                   {p.myDisciplines.map((d) => <Tag key={d} tone="accent" size="sm">{t(DISCIPLINE_LABEL[d])}</Tag>)}
                 </div>
                 <span className={s.muted}>
-                  {DISCIPLINE_CODES.map((d) => `${t(DISCIPLINE_LABEL[d])} ${p.team.filter((m) => m.discipline === d).length}`).join(' · ')}
+                  {registers.get(p.code)!.summary.map((x) => `${t(DISCIPLINE_LABEL[x.discipline])} ${x.releasedShare == null ? '—' : `${x.releasedShare} %`}`).join(' · ')}
+                </span>
+                <span className={s.muted}>
+                  {`${registers.get(p.code)!.checks.filter((c) => isOpenCheck(c.status)).length} ${t('open checks')}`}
                 </span>
               </SectionCard>
             ))}

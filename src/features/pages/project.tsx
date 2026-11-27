@@ -1,6 +1,7 @@
 // The project of a project page, read in the viewer's scope (404 outside it, Norma § 6), and its header: breadcrumb
 // « Project › #026 · HLT-026 », the Keystone name under the title and the project switcher in the toolbar.
 import { notFound } from 'next/navigation';
+import type { ReactNode } from 'react';
 import { FilterBar, FilterGroup, FilterLabel } from '@norma/charte/ds/FilterBar';
 import { PageHeader } from '@/components/app/shell/page-header';
 import type { ScreenId } from '@/config/screens';
@@ -16,7 +17,7 @@ export async function projectOrNotFound(code: string): Promise<ProjectRow> {
   return p;
 }
 
-export async function ProjectHeader({ project, screen, path }: { project: ProjectRow; screen: ScreenId; path: string }) {
+export async function ProjectHeader({ project, screen, path, primary, actions }: { project: ProjectRow; screen: ScreenId; path: string; primary?: ReactNode; actions?: ReactNode }) {
   const [{ t }, viewer] = await Promise.all([getI18n(), getViewer()]);
   const all = await projectsInScope(viewer);
   return (
@@ -24,6 +25,8 @@ export async function ProjectHeader({ project, screen, path }: { project: Projec
       screen={screen}
       crumbs={['Project']}
       crumbData={projectLabel(project)}
+      primary={primary}
+      actions={actions}
       subtitle={`${project.name}${project.client ? ` · ${project.client}` : ''}`}
       toolbar={
         <FilterBar>

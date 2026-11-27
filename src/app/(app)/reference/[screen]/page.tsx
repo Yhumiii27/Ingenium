@@ -13,7 +13,7 @@ export default async function ReferenceScreenPage({ params }: { params: Promise<
   return (
     <>
       <PageHeader screen={def.id} crumbs={['Technical reference']} />
-      <Placeholder delivery={def.delivery} items={SCREEN_CONTENT[def.id] ?? []} />
+      <Placeholder delivery={def.delivery} lot={def.lot} items={SCREEN_CONTENT[def.id] ?? []} />
     </>
   );
 }

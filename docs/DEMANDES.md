@@ -112,6 +112,15 @@
   `pub_reprise_interfaces` (`project_interfaces`), `pub_reprise_ce` (`ce_checklist_items`, `ce_files`). Identifiants métier
   seulement (références, numéros, codes projet), aucun `id` technique publié sauf en colonne `keystone_id` pour le
   journal de reprise ; aucune donnée personnelle hors nom du responsable déjà visible dans Keystone.
+- **Forme attendue de `pub_reprise_registre_ingenierie`** (lot 2a d'Ingenium, 27 novembre 2026 ; lue par `planRegisterTransfer`,
+  `src/domain/transfer.ts`) : une ligne par objet, colonnes `nature` (`regle`, `entree`, `livrable`, `liste`, `controle`,
+  `changement`), `projet_code` (nul pour une règle), `keystone_id`, `donnees` (jsonb). Clés de `donnees` : règle `code`, `libelle` ;
+  entrée `consommateur`, `document`, `revision`, `confirmee`, `fournisseur` et `titre` (document hors registre) ; livrable `numero`,
+  `titre`, `discipline`, `revision`, `etat`, `date`, `auteur`, `destinataires`, `equipement` ; liste `numero`, `discipline`, `nom`,
+  `destinataires`, `source`, `document_source`, `genere_le`, `genere_par`, `revision_source` ; contrôle `numero`, `regle`,
+  `gravite`, `titre`, `detail`, `discipline`, `etat`, `note`, `ferme_par`, `ferme_le` ; changement `date`, `texte`,
+  `destinataires`. Les codes courts de Keystone (`meca`, `elec`, `auto`, `achats`) sont acceptés. Une ligne hors format est
+  refusée avec son motif à la reprise, jamais écrasée.
 - **Raison** : Ingenium ne lit Keystone que par des vues `pub_` (ING-26).
 - **Sans elle** : pas de reprise des projets en cours ; seuls les nouveaux projets passeraient par Ingenium.
 
@@ -186,8 +195,9 @@
 - **Demande** : définir et appliquer, d'après les requêtes de référence d'Ingenium (`src/server/publications/definitions.ts`),
   `ingenium.pub_articles` et `ingenium.pub_nomenclatures` (**mêmes colonnes, même ordre** que les vues de Keystone,
   colonnes nouvelles en fin), `ingenium.pub_pack_ingenierie` (contrat K-08 d'Arche), `ingenium.pub_structures_articles`,
-  `ingenium.pub_plans`, `ingenium.pub_avancement_ingenierie`, `ingenium.pub_journal` (journal unifié) et, quand la
-  proposition Norma TA sera retenue, `ingenium.pub_taches` ; liens de lecture : `keystone_app`, `vigie_app`, `modulus_app`,
+  `ingenium.pub_plans`, `ingenium.pub_avancement_ingenierie`, `ingenium.pub_journal` (journal unifié) et
+  `ingenium.pub_taches` (contrat `norma/contrats/taches-v1.md`, réuni dans `matrix.pub_taches`) — les requêtes de référence de
+  `pub_journal`, `pub_taches` et `pub_avancement_ingenierie` sont prêtes depuis le lot 2a ; liens de lecture : `keystone_app`, `vigie_app`, `modulus_app`,
   `vector_app`, `arche_app` selon la vue (`PERIMETRE.md` § 5.1) ; lien d'exécution `ingenium_app` →
   `vigie.pub_signaler_avancement_eco` (et la fonction de demande, DI-V1).
 - **Raison** : Matrix possède les vues `pub_` (M-18).

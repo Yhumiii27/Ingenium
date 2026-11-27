@@ -3,7 +3,7 @@
 // department opens it in a spreadsheet; a cell that a spreadsheet would run as a formula is neutralised).
 
 /** The areas the journal is written in (src/server writes them as EN source strings). */
-export const JOURNAL_AREAS = ['Sign-in', 'Administration', 'Connectors'] as const;
+export const JOURNAL_AREAS = ['Sign-in', 'Administration', 'Connectors', 'Engineering register', 'Tasks', 'Transfer'] as const;
 
 export const JOURNAL_PAGE_SIZE = 100;
 /** At most this many lines in one export (a period or a filter narrows a larger one). */

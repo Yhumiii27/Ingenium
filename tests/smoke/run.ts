@@ -46,7 +46,9 @@ async function main(): Promise<void> {
     ['/my/tasks', 'Toute la suite'], ['/my/tasks?vue=kanban', 'En cours'], ['/my/tasks?vue=calendrier', 'Calendrier'], ['/my/approvals', 'Mes approbations'],
     ['/my/projects', 'Harbor Line Terminal Expansion'], ['/reference', 'Articles'], ['/reference/parts', 'Livraison 3'], ['/reference/drawings', 'Ouvrir dans PDM'],
     ['/projects/HLT-026', 'Équipe projet'], ['/projects/HLT-026/pid', 'bon pour construction'], ['/projects/HLT-026/ce-file', 'Dossier technique CE'],
-    ['/admin/disciplines', 'Mécanique'], ['/admin/rules', 'Règles de cohérence'], ['/admin/activity', 'keystone.pub_projets'], ['/journal', 'Exporter (CSV)'],
+    ['/projects/HLT-026', 'Qui attend quoi'], ['/projects/HLT-026/electrical', 'SCH-ELE-026'], ['/projects/HLT-026/automation', 'Entrées consommées'],
+    ['/my/tasks?portee=outil', 'Diffusion de LST-IO-026'], ['/my/approvals', 'Proposition de diffusion'],
+    ['/admin/disciplines', 'Mécanique'], ['/admin/rules', 'Règles de cohérence'], ['/admin/activity', 'Bascule depuis Keystone'], ['/journal', 'Exporter (CSV)'],
   ] as const) {
     const r = await get(path, 'engineering_lead');
     check(r.status === 200 && r.body.includes(text), `${path} opens for the engineering lead`);

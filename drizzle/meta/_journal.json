@@ -22,6 +22,20 @@
       "when": 1795779933405,
       "tag": "0002_keystone_team_confidentiality",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795788536812,
+      "tag": "0003_register",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795788537968,
+      "tag": "0004_register_triggers",
+      "breakpoints": true
     }
   ]
 }

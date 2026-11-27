@@ -1,8 +1,8 @@
 import 'server-only';
 // Ingenium's scheduled jobs: the schema backup (when INGENIUM_BACKUP_DIR is set), the hourly read of Keystone's projects and
 // engineering teams (INGENIUM_KEYSTONE not off), and the daily schema declaration to Matrix (when MATRIX_URL or
-// MATRIX_DECLARATIONS_DIR is set). Business jobs (outboxes to Codex and Vigie, PDM synchronisation, projection of the tasks)
-// come with their deliveries.
+// MATRIX_DECLARATIONS_DIR is set). Business jobs (outboxes to Codex and Vigie, PDM synchronisation) come with
+// their lots; the projection of the tasks (lot 2a) runs every 15 minutes.
 import path from 'node:path';
 import { backupSchema } from '@/server/backup';
 import { getConfig } from '@/server/config';
@@ -33,6 +33,18 @@ export function ingeniumJobs(h: PostgresHandle): Job[] {
         const r = await syncKeystone(h.db, { mode: cfg.connectors.keystone });
         if (r.outcome !== 'ok') throw new Error(r.message ?? 'Keystone not read');
         return `${r.projects} projects, ${r.members} team members`;
+      },
+    },
+    {
+      // Projection of Ingenium's own tasks (contract taches-v1 § 1): rewritten by every write, and every 15 minutes for the
+      // closed tasks that leave it after 30 days and the recipients who signed in since.
+      name: 'tasks-projection',
+      everyMin: 15,
+      enabled: !!cfg.database,
+      async run() {
+        const { rebuildPublishedTasks } = await import('@/server/tasks/projection');
+        const n = await h.db.transaction((tx) => rebuildPublishedTasks(tx));
+        return `${n} rows`;
       },
     },
     {

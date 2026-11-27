@@ -6,10 +6,10 @@ import { SectionCard } from '@/components/app/SectionCard';
 import { getI18n } from '@/server/session';
 import s from './pages.module.css';
 
-export async function Placeholder({ delivery, items }: { delivery: number; items: readonly string[] }) {
+export async function Placeholder({ delivery, lot, items }: { delivery: number; lot?: string; items: readonly string[] }) {
   const { t } = await getI18n();
   return (
-    <SectionCard title={t('What this screen will hold')} hint={`${t('Delivery')} ${delivery} · docs/PLAN.md`}>
+    <SectionCard title={t('What this screen will hold')} hint={`${t('Delivery')} ${delivery}${lot ? ` · ${t('lot')} ${lot}` : ''} · docs/PLAN.md`}>
       <ul className={s.list}>
         {items.map((i) => <li key={i}>{t(i)}</li>)}
       </ul>

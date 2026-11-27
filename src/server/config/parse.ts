@@ -70,6 +70,11 @@ export interface IngeniumConfig {
     /** matrix.pub_taches: tasks and approvals of the whole suite (INGENIUM_SUITE_TASKS). */
     suiteTasks: ConnectorMode;
   };
+  /**
+   * Public address of Ingenium (INGENIUM_PUBLIC_URL, default http://localhost:4000): the absolute deep links of the tasks it
+   * publishes in ingenium.pub_taches (contract taches-v1 § 2, `lien`).
+   */
+  publicUrl: string;
   /** Secret values present in the environment: the logger masks them wherever they appear. */
   secrets: string[];
 }
@@ -117,6 +122,8 @@ const VARS = {
   NEXT_PUBLIC_KEYSTONE_URL: httpUrl.optional(),
   NEXT_PUBLIC_CODEX_URL: httpUrl.optional(),
   NEXT_PUBLIC_VIGIE_URL: httpUrl.optional(),
+  // Public address of Ingenium: the deep links of the tasks published in ingenium.pub_taches.
+  INGENIUM_PUBLIC_URL: httpUrl.optional(),
   // Sign-in: src/server/auth/config.ts reads them at call time; validated here too so a production start fails on a bad value
   // instead of every sign-in, and the secrets are masked in the logs.
   INGENIUM_AUTH: z
@@ -241,6 +248,8 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
   }
 
   if (v.INGENIUM_MAIL_TRANSPORT === 'file' && !v.INGENIUM_MAIL_DIR) errors.push({ variable: 'INGENIUM_MAIL_DIR', message: 'is required with INGENIUM_MAIL_TRANSPORT=file' });
+  if (production && !v.INGENIUM_PUBLIC_URL)
+    warnings.push({ variable: 'INGENIUM_PUBLIC_URL', message: 'is not set: the tasks Ingenium publishes link to http://localhost:4000' });
   if (production && v.INGENIUM_MAIL_TRANSPORT === 'file')
     warnings.push({ variable: 'INGENIUM_MAIL_TRANSPORT', message: 'is "file" in production: the messages (notices) are written to a folder, not sent' });
   if (production && v.INGENIUM_CLOCK?.kind === 'fixed')
@@ -279,6 +288,7 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
       connectors,
       seedExplicit: v.INGENIUM_SEED != null,
       clock: v.INGENIUM_CLOCK ?? null,
+      publicUrl: v.INGENIUM_PUBLIC_URL ?? 'http://localhost:4000',
       log: { level: v.LOG_LEVEL ?? 'info', format: v.LOG_FORMAT ?? (production ? 'json' : 'pretty') },
       secrets: [...new Set(secrets)],
     },
