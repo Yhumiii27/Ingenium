@@ -40,6 +40,10 @@
     "Version",
     "Versions",
     "Vigie",
-    "keystone.pub_affectations"
+    "keystone.pub_affectations",
+    "Information",
+    "Note",
+    "Source",
+    "lot"
   ]
 }

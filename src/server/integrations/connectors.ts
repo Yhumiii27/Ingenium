@@ -14,6 +14,7 @@ export interface ConnectorDef {
 export const CONNECTORS: readonly ConnectorDef[] = [
   { tool: 'Clavis', object: 'clavis.pub_acces', nature: 'read', how: 'Roles Ingenium.* at sign-in and on every request', variable: 'INGENIUM_ACCESS_FROM_CLAVIS', delivery: 1, request: 'DI-C1, DI-M1' },
   { tool: 'Keystone', object: 'keystone.pub_projets, pub_affectations', nature: 'read', how: 'Projects and engineering teams (project scope)', variable: 'INGENIUM_KEYSTONE', delivery: 1, request: 'DI-M1' },
+  { tool: 'Keystone', object: 'keystone.pub_reprise_registre_ingenierie', nature: 'read', how: 'Engineering register until its switch-over (temporary transfer view, ING-26)', variable: 'INGENIUM_KEYSTONE', delivery: 2, request: 'DI-K2, DI-M2' },
   { tool: 'Clavis', object: 'clavis.pub_personnes', nature: 'read', how: 'E-mail of a team member by employee number', variable: 'INGENIUM_KEYSTONE', delivery: 1, request: 'DI-M1' },
   { tool: 'Matrix', object: 'matrix.pub_taches, pub_taches_sources', nature: 'read', how: 'Tasks and approvals of the whole suite', variable: 'INGENIUM_SUITE_TASKS', delivery: 1, request: 'TA-1 (Matrix)' },
   { tool: 'Matrix', object: 'POST /api/declarations (matrix.schema/1)', nature: 'write', how: 'Declaration of Ingenium’s schema to the data catalogue', variable: 'MATRIX_URL', delivery: 1, request: 'DI-M1' },

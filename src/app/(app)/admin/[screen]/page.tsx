@@ -14,7 +14,7 @@ export default async function AdminScreenPage({ params }: { params: Promise<{ sc
   return (
     <>
       <PageHeader screen={def.id} crumbs={['Administration']} />
-      <Placeholder delivery={def.delivery} items={SCREEN_CONTENT[def.id] ?? []} />
+      <Placeholder delivery={def.delivery} lot={def.lot} items={SCREEN_CONTENT[def.id] ?? []} />
     </>
   );
 }

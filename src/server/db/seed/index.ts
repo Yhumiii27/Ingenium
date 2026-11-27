@@ -4,6 +4,7 @@ import 'server-only';
 import type { SeedMode } from '@/server/config/parse';
 import { log } from '@/server/log';
 import type { DB } from '../types';
+import { businessToday } from '@/server/clock';
 import { seedDemo } from './demo';
 import { seedReference } from './reference';
 import { readSeedRecord, writeSeedRecord } from './mode';
@@ -14,7 +15,7 @@ export async function seedIfEmpty(db: DB, opts: { mode?: SeedMode } = {}): Promi
   return db.transaction(async (tx) => {
     if (await readSeedRecord(tx)) return false;
     await seedReference(tx);
-    if (mode === 'demo') await seedDemo(tx);
+    if (mode === 'demo') await seedDemo(tx, new Date(), await businessToday(tx));
     await writeSeedRecord(tx, mode);
     log.info('Database seeded', { component: 'db', seed: mode });
     return true;

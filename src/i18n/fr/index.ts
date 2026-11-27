@@ -5,8 +5,9 @@ import { TACHES_FR } from '@norma/charte/ds/taches-fr';
 import auth from './auth.json';
 import shell from './shell.json';
 import ingenium from './ingenium.json';
+import register from './register.json';
 
-const FILES: Record<string, Record<string, string>> = { auth, shell, ingenium };
+const FILES: Record<string, Record<string, string>> = { auth, shell, ingenium, register };
 
 export const FR_FILES = FILES;
 /** The charter's French entries that differ from their English (a word that reads the same is left to the identity). */

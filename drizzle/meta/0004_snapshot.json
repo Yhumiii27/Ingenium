@@ -1,0 +1,2257 @@
+{
+  "id": "742b3775-ab58-4f32-82d8-07d2b4a506e6",
+  "prevId": "cd5605c9-60ff-443c-8539-91491fee99fd",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "ingenium.app_settings": {
+      "name": "app_settings",
+      "schema": "ingenium",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by_name": {
+          "name": "updated_by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "app_settings_key_check": {
+          "name": "app_settings_key_check",
+          "value": "\"ingenium\".\"app_settings\".\"key\" ~ '^[a-z][a-z0-9_.-]{1,63}$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.audit_entries": {
+      "name": "audit_entries",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "occurred_at": {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_user_id": {
+          "name": "actor_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actor_name": {
+          "name": "actor_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_role": {
+          "name": "actor_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "object_ref": {
+          "name": "object_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "change": {
+          "name": "change",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "area": {
+          "name": "area",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "before": {
+          "name": "before",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "after": {
+          "name": "after",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "audit_entries_occurred_at_idx": {
+          "name": "audit_entries_occurred_at_idx",
+          "columns": [
+            {
+              "expression": "occurred_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "audit_entries_entity_idx": {
+          "name": "audit_entries_entity_idx",
+          "columns": [
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "audit_entries_actor_user_id_users_id_fk": {
+          "name": "audit_entries_actor_user_id_users_id_fk",
+          "tableFrom": "audit_entries",
+          "columnsFrom": [
+            "actor_user_id"
+          ],
+          "tableTo": "users",
+          "schemaTo": "ingenium",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "audit_entries_text_check": {
+          "name": "audit_entries_text_check",
+          "value": "btrim(\"ingenium\".\"audit_entries\".\"actor_name\") <> '' and btrim(\"ingenium\".\"audit_entries\".\"object_ref\") <> '' and btrim(\"ingenium\".\"audit_entries\".\"change\") <> '' and btrim(\"ingenium\".\"audit_entries\".\"area\") <> ''"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.job_runs": {
+      "name": "job_runs",
+      "schema": "ingenium",
+      "columns": {
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "lease_until": {
+          "name": "lease_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_started_at": {
+          "name": "last_started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_finished_at": {
+          "name": "last_finished_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_status": {
+          "name": "last_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "job_runs_status_check": {
+          "name": "job_runs_status_check",
+          "value": "\"ingenium\".\"job_runs\".\"last_status\" is null or \"ingenium\".\"job_runs\".\"last_status\" in ('ok', 'error')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.users": {
+      "name": "users",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "oid": {
+          "name": "oid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_sign_in_at": {
+          "name": "last_sign_in_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_oid_unique": {
+          "name": "users_oid_unique",
+          "columns": [
+            "oid"
+          ],
+          "nullsNotDistinct": false
+        },
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "columns": [
+            "email"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "users_email_check": {
+          "name": "users_email_check",
+          "value": "\"ingenium\".\"users\".\"email\" ~ '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+$' and \"ingenium\".\"users\".\"email\" = lower(\"ingenium\".\"users\".\"email\")"
+        },
+        "users_name_check": {
+          "name": "users_name_check",
+          "value": "btrim(\"ingenium\".\"users\".\"name\") <> ''"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.disciplines": {
+      "name": "disciplines",
+      "schema": "ingenium",
+      "columns": {
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "disciplines_code_check": {
+          "name": "disciplines_code_check",
+          "value": "\"ingenium\".\"disciplines\".\"code\" in ('process', 'mechanical', 'electrical', 'automation')"
+        },
+        "disciplines_label_check": {
+          "name": "disciplines_label_check",
+          "value": "btrim(\"ingenium\".\"disciplines\".\"label\") <> ''"
+        },
+        "disciplines_position_check": {
+          "name": "disciplines_position_check",
+          "value": "\"ingenium\".\"disciplines\".\"position\" between 1 and 99"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.project_mirror": {
+      "name": "project_mirror",
+      "schema": "ingenium",
+      "columns": {
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "design_office_number": {
+          "name": "design_office_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client": {
+          "name": "client",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phase": {
+          "name": "phase",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "open": {
+          "name": "open",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "synced_at": {
+          "name": "synced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "confidential": {
+          "name": "confidential",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "project_mirror_code_check": {
+          "name": "project_mirror_code_check",
+          "value": "\"ingenium\".\"project_mirror\".\"code\" ~ '^[A-Z]{3}-[0-9]{3}$'"
+        },
+        "project_mirror_number_check": {
+          "name": "project_mirror_number_check",
+          "value": "\"ingenium\".\"project_mirror\".\"design_office_number\" is null or \"ingenium\".\"project_mirror\".\"design_office_number\" ~ '^#[0-9]{3,4}$'"
+        },
+        "project_mirror_name_check": {
+          "name": "project_mirror_name_check",
+          "value": "btrim(\"ingenium\".\"project_mirror\".\"name\") <> ''"
+        },
+        "project_mirror_source_check": {
+          "name": "project_mirror_source_check",
+          "value": "\"ingenium\".\"project_mirror\".\"source\" in ('keystone', 'simulation')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.sync_runs": {
+      "name": "sync_runs",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rows": {
+          "name": "rows",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requested_by": {
+          "name": "requested_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "sync_runs_started_idx": {
+          "name": "sync_runs_started_idx",
+          "columns": [
+            {
+              "expression": "started_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "sync_runs_source_check": {
+          "name": "sync_runs_source_check",
+          "value": "\"ingenium\".\"sync_runs\".\"source\" in ('keystone')"
+        },
+        "sync_runs_outcome_check": {
+          "name": "sync_runs_outcome_check",
+          "value": "\"ingenium\".\"sync_runs\".\"outcome\" in ('ok', 'error', 'unavailable')"
+        },
+        "sync_runs_rows_check": {
+          "name": "sync_runs_rows_check",
+          "value": "\"ingenium\".\"sync_runs\".\"rows\" >= 0"
+        },
+        "sync_runs_order_check": {
+          "name": "sync_runs_order_check",
+          "value": "\"ingenium\".\"sync_runs\".\"finished_at\" >= \"ingenium\".\"sync_runs\".\"started_at\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.team_mirror": {
+      "name": "team_mirror",
+      "schema": "ingenium",
+      "columns": {
+        "project_code": {
+          "name": "project_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assignment": {
+          "name": "assignment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "employee_number": {
+          "name": "employee_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "person_name": {
+          "name": "person_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "discipline": {
+          "name": "discipline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "activity": {
+          "name": "activity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origin": {
+          "name": "origin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'assignment'"
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "synced_at": {
+          "name": "synced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "team_mirror_email_idx": {
+          "name": "team_mirror_email_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "team_mirror_project_code_project_mirror_code_fk": {
+          "name": "team_mirror_project_code_project_mirror_code_fk",
+          "tableFrom": "team_mirror",
+          "columnsFrom": [
+            "project_code"
+          ],
+          "tableTo": "project_mirror",
+          "schemaTo": "ingenium",
+          "columnsTo": [
+            "code"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "team_mirror_project_code_assignment_pk": {
+          "name": "team_mirror_project_code_assignment_pk",
+          "columns": [
+            "project_code",
+            "assignment"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "team_mirror_assignment_check": {
+          "name": "team_mirror_assignment_check",
+          "value": "btrim(\"ingenium\".\"team_mirror\".\"assignment\") <> ''"
+        },
+        "team_mirror_name_check": {
+          "name": "team_mirror_name_check",
+          "value": "btrim(\"ingenium\".\"team_mirror\".\"person_name\") <> ''"
+        },
+        "team_mirror_email_check": {
+          "name": "team_mirror_email_check",
+          "value": "\"ingenium\".\"team_mirror\".\"email\" is null or (\"ingenium\".\"team_mirror\".\"email\" ~ '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+$' and \"ingenium\".\"team_mirror\".\"email\" = lower(\"ingenium\".\"team_mirror\".\"email\"))"
+        },
+        "team_mirror_discipline_check": {
+          "name": "team_mirror_discipline_check",
+          "value": "\"ingenium\".\"team_mirror\".\"discipline\" is null or \"ingenium\".\"team_mirror\".\"discipline\" in ('process', 'mechanical', 'electrical', 'automation')"
+        },
+        "team_mirror_source_check": {
+          "name": "team_mirror_source_check",
+          "value": "\"ingenium\".\"team_mirror\".\"source\" in ('keystone', 'simulation')"
+        },
+        "team_mirror_origin_check": {
+          "name": "team_mirror_origin_check",
+          "value": "\"ingenium\".\"team_mirror\".\"origin\" in ('assignment', 'stakeholder')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.consistency_rules": {
+      "name": "consistency_rules",
+      "schema": "ingenium",
+      "columns": {
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "consistency_rules_code_check": {
+          "name": "consistency_rules_code_check",
+          "value": "\"ingenium\".\"consistency_rules\".\"code\" ~ '^[a-z][a-z0-9-]{1,39}$'"
+        },
+        "consistency_rules_label_check": {
+          "name": "consistency_rules_label_check",
+          "value": "btrim(\"ingenium\".\"consistency_rules\".\"label\") <> ''"
+        },
+        "consistency_rules_position_check": {
+          "name": "consistency_rules_position_check",
+          "value": "\"ingenium\".\"consistency_rules\".\"position\" between 1 and 999"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.deliverable_revisions": {
+      "name": "deliverable_revisions",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "deliverable_id": {
+          "name": "deliverable_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revision": {
+          "name": "revision",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "occurred_at": {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "by_name": {
+          "name": "by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "deliverable_revisions_deliverable_idx": {
+          "name": "deliverable_revisions_deliverable_idx",
+          "columns": [
+            {
+              "expression": "deliverable_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "deliverable_revisions_deliverable_id_register_deliverables_id_fk": {
+          "name": "deliverable_revisions_deliverable_id_register_deliverables_id_fk",
+          "tableFrom": "deliverable_revisions",
+          "columnsFrom": [
+            "deliverable_id"
+          ],
+          "tableTo": "register_deliverables",
+          "schemaTo": "ingenium",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "deliverable_revisions_revision_check": {
+          "name": "deliverable_revisions_revision_check",
+          "value": "\"ingenium\".\"deliverable_revisions\".\"revision\" ~ '^[A-Z0-9]{1,3}$'"
+        },
+        "deliverable_revisions_status_check": {
+          "name": "deliverable_revisions_status_check",
+          "value": "\"ingenium\".\"deliverable_revisions\".\"status\" in ('draft', 'frozen', 'release_proposed', 'released', 'obsolete')"
+        },
+        "deliverable_revisions_by_check": {
+          "name": "deliverable_revisions_by_check",
+          "value": "btrim(\"ingenium\".\"deliverable_revisions\".\"by_name\") <> ''"
+        },
+        "deliverable_revisions_reason_check": {
+          "name": "deliverable_revisions_reason_check",
+          "value": "\"ingenium\".\"deliverable_revisions\".\"reason\" is null or btrim(\"ingenium\".\"deliverable_revisions\".\"reason\") <> ''"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.register_changes": {
+      "name": "register_changes",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_code": {
+          "name": "project_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "occurred_on": {
+          "name": "occurred_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "object_ref": {
+          "name": "object_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recipients": {
+          "name": "recipients",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "by_name": {
+          "name": "by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "register_changes_project_idx": {
+          "name": "register_changes_project_idx",
+          "columns": [
+            {
+              "expression": "project_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "occurred_on",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "register_changes_project_check": {
+          "name": "register_changes_project_check",
+          "value": "\"ingenium\".\"register_changes\".\"project_code\" ~ '^[A-Z]{3}-[0-9]{3}$'"
+        },
+        "register_changes_kind_check": {
+          "name": "register_changes_kind_check",
+          "value": "\"ingenium\".\"register_changes\".\"kind\" in ('note', 'deliverable_frozen', 'deliverable_proposed', 'deliverable_released', 'deliverable_revised', 'deliverable_obsolete', 'input_confirmed', 'output_generated')"
+        },
+        "register_changes_object_check": {
+          "name": "register_changes_object_check",
+          "value": "\"ingenium\".\"register_changes\".\"object_ref\" is null or btrim(\"ingenium\".\"register_changes\".\"object_ref\") <> ''"
+        },
+        "register_changes_revision_check": {
+          "name": "register_changes_revision_check",
+          "value": "\"ingenium\".\"register_changes\".\"revision\" is null or \"ingenium\".\"register_changes\".\"revision\" ~ '^[A-Z0-9]{1,3}$'"
+        },
+        "register_changes_text_check": {
+          "name": "register_changes_text_check",
+          "value": "(\"ingenium\".\"register_changes\".\"kind\" <> 'note' or \"ingenium\".\"register_changes\".\"text\" is not null) and (\"ingenium\".\"register_changes\".\"text\" is null or btrim(\"ingenium\".\"register_changes\".\"text\") <> '')"
+        },
+        "register_changes_recipients_check": {
+          "name": "register_changes_recipients_check",
+          "value": "\"ingenium\".\"register_changes\".\"recipients\" <@ array['process', 'mechanical', 'electrical', 'automation', 'client', 'site', 'purchasing', 'project_management']::text[]"
+        },
+        "register_changes_by_check": {
+          "name": "register_changes_by_check",
+          "value": "btrim(\"ingenium\".\"register_changes\".\"by_name\") <> ''"
+        },
+        "register_changes_source_check": {
+          "name": "register_changes_source_check",
+          "value": "\"ingenium\".\"register_changes\".\"source\" in ('keystone', 'simulation', 'ingenium')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.register_checks": {
+      "name": "register_checks",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_code": {
+          "name": "project_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "number": {
+          "name": "number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rule_code": {
+          "name": "rule_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "severity": {
+          "name": "severity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "detail": {
+          "name": "detail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "owner": {
+          "name": "owner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "closed_by_name": {
+          "name": "closed_by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raised_by_name": {
+          "name": "raised_by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "keystone_id": {
+          "name": "keystone_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "imported_at": {
+          "name": "imported_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "row_version": {
+          "name": "row_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "register_checks_rule_code_consistency_rules_code_fk": {
+          "name": "register_checks_rule_code_consistency_rules_code_fk",
+          "tableFrom": "register_checks",
+          "columnsFrom": [
+            "rule_code"
+          ],
+          "tableTo": "consistency_rules",
+          "schemaTo": "ingenium",
+          "columnsTo": [
+            "code"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "register_checks_unique": {
+          "name": "register_checks_unique",
+          "columns": [
+            "project_code",
+            "number"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "register_checks_project_check": {
+          "name": "register_checks_project_check",
+          "value": "\"ingenium\".\"register_checks\".\"project_code\" ~ '^[A-Z]{3}-[0-9]{3}$'"
+        },
+        "register_checks_number_check": {
+          "name": "register_checks_number_check",
+          "value": "\"ingenium\".\"register_checks\".\"number\" ~ '^C-[0-9]{2,4}$'"
+        },
+        "register_checks_severity_check": {
+          "name": "register_checks_severity_check",
+          "value": "\"ingenium\".\"register_checks\".\"severity\" in ('blocking', 'warning', 'info')"
+        },
+        "register_checks_title_check": {
+          "name": "register_checks_title_check",
+          "value": "btrim(\"ingenium\".\"register_checks\".\"title\") <> ''"
+        },
+        "register_checks_detail_check": {
+          "name": "register_checks_detail_check",
+          "value": "\"ingenium\".\"register_checks\".\"detail\" is null or btrim(\"ingenium\".\"register_checks\".\"detail\") <> ''"
+        },
+        "register_checks_owner_check": {
+          "name": "register_checks_owner_check",
+          "value": "\"ingenium\".\"register_checks\".\"owner\" in ('process', 'mechanical', 'electrical', 'automation')"
+        },
+        "register_checks_status_check": {
+          "name": "register_checks_status_check",
+          "value": "\"ingenium\".\"register_checks\".\"status\" in ('open', 'in_progress', 'sent_back', 'resolved', 'cancelled')"
+        },
+        "register_checks_note_check": {
+          "name": "register_checks_note_check",
+          "value": "\"ingenium\".\"register_checks\".\"note\" is null or btrim(\"ingenium\".\"register_checks\".\"note\") <> ''"
+        },
+        "register_checks_closed_check": {
+          "name": "register_checks_closed_check",
+          "value": "(\"ingenium\".\"register_checks\".\"status\" in ('resolved', 'cancelled')) = (\"ingenium\".\"register_checks\".\"closed_at\" is not null) and (\"ingenium\".\"register_checks\".\"closed_at\" is null) = (\"ingenium\".\"register_checks\".\"closed_by_name\" is null)"
+        },
+        "register_checks_closed_note_check": {
+          "name": "register_checks_closed_note_check",
+          "value": "\"ingenium\".\"register_checks\".\"status\" not in ('resolved', 'cancelled', 'sent_back') or \"ingenium\".\"register_checks\".\"note\" is not null"
+        },
+        "register_checks_raised_check": {
+          "name": "register_checks_raised_check",
+          "value": "btrim(\"ingenium\".\"register_checks\".\"raised_by_name\") <> ''"
+        },
+        "register_checks_source_check": {
+          "name": "register_checks_source_check",
+          "value": "\"ingenium\".\"register_checks\".\"source\" in ('keystone', 'simulation', 'ingenium')"
+        },
+        "register_checks_version_check": {
+          "name": "register_checks_version_check",
+          "value": "\"ingenium\".\"register_checks\".\"row_version\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.register_deliverables": {
+      "name": "register_deliverables",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_code": {
+          "name": "project_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "number": {
+          "name": "number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "discipline": {
+          "name": "discipline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "equipment_ref": {
+          "name": "equipment_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issued_on": {
+          "name": "issued_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "author_name": {
+          "name": "author_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipients": {
+          "name": "recipients",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "keystone_id": {
+          "name": "keystone_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "imported_at": {
+          "name": "imported_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "row_version": {
+          "name": "row_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "register_deliverables_unique": {
+          "name": "register_deliverables_unique",
+          "columns": [
+            "project_code",
+            "number"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "register_deliverables_project_check": {
+          "name": "register_deliverables_project_check",
+          "value": "\"ingenium\".\"register_deliverables\".\"project_code\" ~ '^[A-Z]{3}-[0-9]{3}$'"
+        },
+        "register_deliverables_number_check": {
+          "name": "register_deliverables_number_check",
+          "value": "\"ingenium\".\"register_deliverables\".\"number\" ~ '^[A-Z][A-Z0-9]{1,5}(-[A-Z0-9]{2,8}){1,3}$'"
+        },
+        "register_deliverables_title_check": {
+          "name": "register_deliverables_title_check",
+          "value": "btrim(\"ingenium\".\"register_deliverables\".\"title\") <> ''"
+        },
+        "register_deliverables_discipline_check": {
+          "name": "register_deliverables_discipline_check",
+          "value": "\"ingenium\".\"register_deliverables\".\"discipline\" in ('process', 'mechanical', 'electrical', 'automation')"
+        },
+        "register_deliverables_equipment_check": {
+          "name": "register_deliverables_equipment_check",
+          "value": "\"ingenium\".\"register_deliverables\".\"equipment_ref\" is null or btrim(\"ingenium\".\"register_deliverables\".\"equipment_ref\") <> ''"
+        },
+        "register_deliverables_revision_check": {
+          "name": "register_deliverables_revision_check",
+          "value": "\"ingenium\".\"register_deliverables\".\"revision\" ~ '^[A-Z0-9]{1,3}$'"
+        },
+        "register_deliverables_status_check": {
+          "name": "register_deliverables_status_check",
+          "value": "\"ingenium\".\"register_deliverables\".\"status\" in ('draft', 'frozen', 'release_proposed', 'released', 'obsolete')"
+        },
+        "register_deliverables_author_check": {
+          "name": "register_deliverables_author_check",
+          "value": "btrim(\"ingenium\".\"register_deliverables\".\"author_name\") <> ''"
+        },
+        "register_deliverables_recipients_check": {
+          "name": "register_deliverables_recipients_check",
+          "value": "\"ingenium\".\"register_deliverables\".\"recipients\" <@ array['process', 'mechanical', 'electrical', 'automation', 'client', 'site', 'purchasing', 'project_management']::text[]"
+        },
+        "register_deliverables_source_check": {
+          "name": "register_deliverables_source_check",
+          "value": "\"ingenium\".\"register_deliverables\".\"source\" in ('keystone', 'simulation', 'ingenium')"
+        },
+        "register_deliverables_version_check": {
+          "name": "register_deliverables_version_check",
+          "value": "\"ingenium\".\"register_deliverables\".\"row_version\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.register_inputs": {
+      "name": "register_inputs",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_code": {
+          "name": "project_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumer": {
+          "name": "consumer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "document_number": {
+          "name": "document_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "external_party": {
+          "name": "external_party",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "external_title": {
+          "name": "external_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revision_in_use": {
+          "name": "revision_in_use",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "acknowledged_at": {
+          "name": "acknowledged_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acknowledged_by_name": {
+          "name": "acknowledged_by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "keystone_id": {
+          "name": "keystone_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "imported_at": {
+          "name": "imported_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "register_inputs_unique": {
+          "name": "register_inputs_unique",
+          "columns": [
+            "project_code",
+            "consumer",
+            "document_number"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "register_inputs_project_check": {
+          "name": "register_inputs_project_check",
+          "value": "\"ingenium\".\"register_inputs\".\"project_code\" ~ '^[A-Z]{3}-[0-9]{3}$'"
+        },
+        "register_inputs_consumer_check": {
+          "name": "register_inputs_consumer_check",
+          "value": "\"ingenium\".\"register_inputs\".\"consumer\" in ('process', 'mechanical', 'electrical', 'automation')"
+        },
+        "register_inputs_number_check": {
+          "name": "register_inputs_number_check",
+          "value": "\"ingenium\".\"register_inputs\".\"document_number\" ~ '^[A-Z][A-Z0-9]{1,5}(-[A-Z0-9]{2,8}){1,3}$'"
+        },
+        "register_inputs_party_check": {
+          "name": "register_inputs_party_check",
+          "value": "\"ingenium\".\"register_inputs\".\"external_party\" is null or (\"ingenium\".\"register_inputs\".\"external_party\" in ('process', 'mechanical', 'electrical', 'automation', 'client', 'site', 'purchasing', 'project_management') and \"ingenium\".\"register_inputs\".\"external_party\" not in ('process', 'mechanical', 'electrical', 'automation'))"
+        },
+        "register_inputs_title_check": {
+          "name": "register_inputs_title_check",
+          "value": "(\"ingenium\".\"register_inputs\".\"external_party\" is null and \"ingenium\".\"register_inputs\".\"external_title\" is null) or (\"ingenium\".\"register_inputs\".\"external_party\" is not null and \"ingenium\".\"register_inputs\".\"external_title\" is not null and btrim(\"ingenium\".\"register_inputs\".\"external_title\") <> '')"
+        },
+        "register_inputs_revision_check": {
+          "name": "register_inputs_revision_check",
+          "value": "\"ingenium\".\"register_inputs\".\"revision_in_use\" ~ '^[A-Z0-9]{1,3}$'"
+        },
+        "register_inputs_ack_check": {
+          "name": "register_inputs_ack_check",
+          "value": "(\"ingenium\".\"register_inputs\".\"acknowledged_at\" is null) = (\"ingenium\".\"register_inputs\".\"acknowledged_by_name\" is null) and (\"ingenium\".\"register_inputs\".\"acknowledged_by_name\" is null or btrim(\"ingenium\".\"register_inputs\".\"acknowledged_by_name\") <> '')"
+        },
+        "register_inputs_source_check": {
+          "name": "register_inputs_source_check",
+          "value": "\"ingenium\".\"register_inputs\".\"source\" in ('keystone', 'simulation', 'ingenium')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.register_outputs": {
+      "name": "register_outputs",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_code": {
+          "name": "project_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "number": {
+          "name": "number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "discipline": {
+          "name": "discipline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipients": {
+          "name": "recipients",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_deliverable": {
+          "name": "source_deliverable",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_text": {
+          "name": "source_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "generated_at": {
+          "name": "generated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "generated_by_name": {
+          "name": "generated_by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "generated_from_revision": {
+          "name": "generated_from_revision",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "keystone_id": {
+          "name": "keystone_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "imported_at": {
+          "name": "imported_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "register_outputs_unique": {
+          "name": "register_outputs_unique",
+          "columns": [
+            "project_code",
+            "number"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "register_outputs_project_check": {
+          "name": "register_outputs_project_check",
+          "value": "\"ingenium\".\"register_outputs\".\"project_code\" ~ '^[A-Z]{3}-[0-9]{3}$'"
+        },
+        "register_outputs_number_check": {
+          "name": "register_outputs_number_check",
+          "value": "\"ingenium\".\"register_outputs\".\"number\" ~ '^O-[0-9]{2,4}$'"
+        },
+        "register_outputs_discipline_check": {
+          "name": "register_outputs_discipline_check",
+          "value": "\"ingenium\".\"register_outputs\".\"discipline\" in ('process', 'mechanical', 'electrical', 'automation')"
+        },
+        "register_outputs_name_check": {
+          "name": "register_outputs_name_check",
+          "value": "btrim(\"ingenium\".\"register_outputs\".\"name\") <> ''"
+        },
+        "register_outputs_recipients_check": {
+          "name": "register_outputs_recipients_check",
+          "value": "\"ingenium\".\"register_outputs\".\"recipients\" <@ array['process', 'mechanical', 'electrical', 'automation', 'client', 'site', 'purchasing', 'project_management']::text[]"
+        },
+        "register_outputs_deliverable_check": {
+          "name": "register_outputs_deliverable_check",
+          "value": "\"ingenium\".\"register_outputs\".\"source_deliverable\" is null or \"ingenium\".\"register_outputs\".\"source_deliverable\" ~ '^[A-Z][A-Z0-9]{1,5}(-[A-Z0-9]{2,8}){1,3}$'"
+        },
+        "register_outputs_source_text_check": {
+          "name": "register_outputs_source_text_check",
+          "value": "\"ingenium\".\"register_outputs\".\"source_text\" is null or btrim(\"ingenium\".\"register_outputs\".\"source_text\") <> ''"
+        },
+        "register_outputs_generated_check": {
+          "name": "register_outputs_generated_check",
+          "value": "(\"ingenium\".\"register_outputs\".\"generated_at\" is null) = (\"ingenium\".\"register_outputs\".\"generated_by_name\" is null)"
+        },
+        "register_outputs_from_check": {
+          "name": "register_outputs_from_check",
+          "value": "\"ingenium\".\"register_outputs\".\"generated_from_revision\" is null or \"ingenium\".\"register_outputs\".\"generated_from_revision\" ~ '^[A-Z0-9]{1,3}$'"
+        },
+        "register_outputs_source_check": {
+          "name": "register_outputs_source_check",
+          "value": "\"ingenium\".\"register_outputs\".\"source\" in ('keystone', 'simulation', 'ingenium')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.object_switchovers": {
+      "name": "object_switchovers",
+      "schema": "ingenium",
+      "columns": {
+        "object": {
+          "name": "object",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "switched_at": {
+          "name": "switched_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "by_name": {
+          "name": "by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "transfer_run_id": {
+          "name": "transfer_run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "object_switchovers_transfer_run_id_transfer_runs_id_fk": {
+          "name": "object_switchovers_transfer_run_id_transfer_runs_id_fk",
+          "tableFrom": "object_switchovers",
+          "columnsFrom": [
+            "transfer_run_id"
+          ],
+          "tableTo": "transfer_runs",
+          "schemaTo": "ingenium",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "object_switchovers_object_check": {
+          "name": "object_switchovers_object_check",
+          "value": "\"ingenium\".\"object_switchovers\".\"object\" in ('register', 'pid', 'drawings', 'pack', 'interfaces', 'ce', 'parts', 'bom')"
+        },
+        "object_switchovers_by_check": {
+          "name": "object_switchovers_by_check",
+          "value": "btrim(\"ingenium\".\"object_switchovers\".\"by_name\") <> ''"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.transfer_runs": {
+      "name": "transfer_runs",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "object": {
+          "name": "object",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mode": {
+          "name": "mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "occurred_at": {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "by_name": {
+          "name": "by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "by_user_id": {
+          "name": "by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "counts": {
+          "name": "counts",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refused": {
+          "name": "refused",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refusals": {
+          "name": "refusals",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "transfer_runs_object_idx": {
+          "name": "transfer_runs_object_idx",
+          "columns": [
+            {
+              "expression": "object",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "occurred_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "transfer_runs_object_check": {
+          "name": "transfer_runs_object_check",
+          "value": "\"ingenium\".\"transfer_runs\".\"object\" in ('register', 'pid', 'drawings', 'pack', 'interfaces', 'ce', 'parts', 'bom')"
+        },
+        "transfer_runs_mode_check": {
+          "name": "transfer_runs_mode_check",
+          "value": "\"ingenium\".\"transfer_runs\".\"mode\" in ('dry_run', 'applied')"
+        },
+        "transfer_runs_source_check": {
+          "name": "transfer_runs_source_check",
+          "value": "\"ingenium\".\"transfer_runs\".\"source\" in ('keystone', 'simulation')"
+        },
+        "transfer_runs_by_check": {
+          "name": "transfer_runs_by_check",
+          "value": "btrim(\"ingenium\".\"transfer_runs\".\"by_name\") <> ''"
+        },
+        "transfer_runs_refused_check": {
+          "name": "transfer_runs_refused_check",
+          "value": "\"ingenium\".\"transfer_runs\".\"refused\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.free_tasks": {
+      "name": "free_tasks",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "project_code": {
+          "name": "project_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assignee_email": {
+          "name": "assignee_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assignee_name": {
+          "name": "assignee_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by_name": {
+          "name": "created_by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "due_on": {
+          "name": "due_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "priority": {
+          "name": "priority",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'normal'"
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'todo'"
+        },
+        "done_at": {
+          "name": "done_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancel_reason": {
+          "name": "cancel_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "row_version": {
+          "name": "row_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "free_tasks_assignee_idx": {
+          "name": "free_tasks_assignee_idx",
+          "columns": [
+            {
+              "expression": "assignee_email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "free_tasks_created_by_user_id_users_id_fk": {
+          "name": "free_tasks_created_by_user_id_users_id_fk",
+          "tableFrom": "free_tasks",
+          "columnsFrom": [
+            "created_by_user_id"
+          ],
+          "tableTo": "users",
+          "schemaTo": "ingenium",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "free_tasks_title_check": {
+          "name": "free_tasks_title_check",
+          "value": "btrim(\"ingenium\".\"free_tasks\".\"title\") <> '' and length(\"ingenium\".\"free_tasks\".\"title\") <= 200"
+        },
+        "free_tasks_project_check": {
+          "name": "free_tasks_project_check",
+          "value": "\"ingenium\".\"free_tasks\".\"project_code\" is null or \"ingenium\".\"free_tasks\".\"project_code\" ~ '^[A-Z]{3}-[0-9]{3}$'"
+        },
+        "free_tasks_assignee_check": {
+          "name": "free_tasks_assignee_check",
+          "value": "\"ingenium\".\"free_tasks\".\"assignee_email\" ~ '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+$' and \"ingenium\".\"free_tasks\".\"assignee_email\" = lower(\"ingenium\".\"free_tasks\".\"assignee_email\")"
+        },
+        "free_tasks_assignee_name_check": {
+          "name": "free_tasks_assignee_name_check",
+          "value": "btrim(\"ingenium\".\"free_tasks\".\"assignee_name\") <> ''"
+        },
+        "free_tasks_created_by_check": {
+          "name": "free_tasks_created_by_check",
+          "value": "btrim(\"ingenium\".\"free_tasks\".\"created_by_name\") <> ''"
+        },
+        "free_tasks_priority_check": {
+          "name": "free_tasks_priority_check",
+          "value": "\"ingenium\".\"free_tasks\".\"priority\" in ('normal', 'high')"
+        },
+        "free_tasks_state_check": {
+          "name": "free_tasks_state_check",
+          "value": "\"ingenium\".\"free_tasks\".\"state\" in ('todo', 'in_progress', 'waiting', 'done', 'cancelled')"
+        },
+        "free_tasks_done_check": {
+          "name": "free_tasks_done_check",
+          "value": "(\"ingenium\".\"free_tasks\".\"state\" = 'done') = (\"ingenium\".\"free_tasks\".\"done_at\" is not null)"
+        },
+        "free_tasks_cancel_check": {
+          "name": "free_tasks_cancel_check",
+          "value": "(\"ingenium\".\"free_tasks\".\"state\" = 'cancelled') = (\"ingenium\".\"free_tasks\".\"cancel_reason\" is not null) and (\"ingenium\".\"free_tasks\".\"cancel_reason\" is null or btrim(\"ingenium\".\"free_tasks\".\"cancel_reason\") <> '')"
+        },
+        "free_tasks_version_check": {
+          "name": "free_tasks_version_check",
+          "value": "\"ingenium\".\"free_tasks\".\"row_version\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.published_tasks": {
+      "name": "published_tasks",
+      "schema": "ingenium",
+      "columns": {
+        "task_id": {
+          "name": "task_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipient_email": {
+          "name": "recipient_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "person_id": {
+          "name": "person_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nature": {
+          "name": "nature",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type_label": {
+          "name": "type_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type_label_en": {
+          "name": "type_label_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "object_ref": {
+          "name": "object_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "due_on": {
+          "name": "due_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "priority": {
+          "name": "priority",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actions": {
+          "name": "actions",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sensitive": {
+          "name": "sensitive",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "project_code": {
+          "name": "project_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "link": {
+          "name": "link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "published_tasks_recipient_idx": {
+          "name": "published_tasks_recipient_idx",
+          "columns": [
+            {
+              "expression": "recipient_email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "published_tasks_task_id_recipient_email_pk": {
+          "name": "published_tasks_task_id_recipient_email_pk",
+          "columns": [
+            "task_id",
+            "recipient_email"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "published_tasks_task_check": {
+          "name": "published_tasks_task_check",
+          "value": "btrim(\"ingenium\".\"published_tasks\".\"task_id\") <> ''"
+        },
+        "published_tasks_recipient_check": {
+          "name": "published_tasks_recipient_check",
+          "value": "\"ingenium\".\"published_tasks\".\"recipient_email\" ~ '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+$' and \"ingenium\".\"published_tasks\".\"recipient_email\" = lower(\"ingenium\".\"published_tasks\".\"recipient_email\")"
+        },
+        "published_tasks_nature_check": {
+          "name": "published_tasks_nature_check",
+          "value": "\"ingenium\".\"published_tasks\".\"nature\" in ('tache', 'approbation')"
+        },
+        "published_tasks_type_check": {
+          "name": "published_tasks_type_check",
+          "value": "\"ingenium\".\"published_tasks\".\"type\" ~ '^[a-z][a-z_]{1,39}$'"
+        },
+        "published_tasks_labels_check": {
+          "name": "published_tasks_labels_check",
+          "value": "btrim(\"ingenium\".\"published_tasks\".\"type_label\") <> '' and btrim(\"ingenium\".\"published_tasks\".\"type_label_en\") <> '' and btrim(\"ingenium\".\"published_tasks\".\"title\") <> ''"
+        },
+        "published_tasks_state_check": {
+          "name": "published_tasks_state_check",
+          "value": "\"ingenium\".\"published_tasks\".\"state\" in ('a_faire', 'en_cours', 'en_attente', 'faite', 'annulee')"
+        },
+        "published_tasks_priority_check": {
+          "name": "published_tasks_priority_check",
+          "value": "\"ingenium\".\"published_tasks\".\"priority\" in ('normale', 'haute')"
+        },
+        "published_tasks_actions_check": {
+          "name": "published_tasks_actions_check",
+          "value": "\"ingenium\".\"published_tasks\".\"actions\" <@ array['ouvrir', 'commenter', 'approuver', 'refuser', 'demarrer', 'suspendre', 'reprendre', 'terminer']::text[]"
+        },
+        "published_tasks_project_check": {
+          "name": "published_tasks_project_check",
+          "value": "\"ingenium\".\"published_tasks\".\"project_code\" is null or \"ingenium\".\"published_tasks\".\"project_code\" ~ '^[A-Z]{3}-[0-9]{3}$'"
+        },
+        "published_tasks_link_check": {
+          "name": "published_tasks_link_check",
+          "value": "\"ingenium\".\"published_tasks\".\"link\" ~ '^https?://'"
+        },
+        "published_tasks_version_check": {
+          "name": "published_tasks_version_check",
+          "value": "btrim(\"ingenium\".\"published_tasks\".\"version\") <> ''"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

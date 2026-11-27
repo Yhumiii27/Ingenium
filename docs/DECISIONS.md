@@ -82,6 +82,16 @@ Chaque ligne : la question, la réponse par défaut appliquée (★), les autres
 | ING-27 | **Keystone après la transition** — Modulus : l'écran du catalogue de Keystone devient une lecture avec un lien vers Modulus. Vector : l'écran Expéditions devient une lecture de Vector. | Synthèse, disciplines, P&ID, plans, interfaces retirés de la navigation (avancement lu sur la fiche projet, lien profond) ; Articles et Nomenclature gardés en lecture avec les colonnes d'achat de Keystone ; tables retirées par une nouvelle migration après le retrait des vues par Matrix. | (1) Tous les écrans gardés en lecture seule dans Keystone. ; (2) Tables gardées en archive dans Keystone (pas de suppression), écrans retirés. | phase 4 |
 | ING-28 | **Socle technique copié** — Norma : on copie la plateforme d'un outil, jamais ses modules métier (origine notée dans docs/SOCLE.md). Modulus est le plus récent (Vector → Clavis), avec la coque Norma 2.3. | Socle copié de Modulus main (connexion Clavis, droits lus dans clavis.pub_acces, coque, i18n, journal, tâches planifiées). | (1) Socle copié de Keystone (plus proche des écrans repris, mais plus lourd et encore sur PGlite en développement). ; (2) Socle copié de Vector. | phase 0 |
 
+### Livraison 2, lot 2a (27 novembre 2026, `docs/DELIVERY-2.md` § 4)
+
+| Id | Question | Réponse par défaut ★ | Autres choix | Bloque |
+| --- | --- | --- | --- | --- |
+| ING-31 | **Tâches libres de « Mes tâches »** (ING-25) | Avec les registres : **appliquée** au lot 2a (créer, déplacer sur le tableau, annuler avec motif). | Dès une livraison 1 bis. | — |
+| ING-32 | **Démonstration basculée** — Le jeu de démonstration montre-t-il le registre déjà tenu par Ingenium ? | Oui : la reprise du registre simulé de Keystone est appliquée par le jeu de démonstration ; une base de production démarre tenue dans Keystone. | Non : la démonstration commence tenue dans Keystone, l'administrateur bascule. | — |
+| ING-33 | **Enregistrer la diffusion décidée dans Codex** — Tant que le connecteur Codex n'existe pas (lot 2b, DI-X1), qui l'enregistre dans Ingenium ? | Le responsable ingénierie ou le gestionnaire documentaire. | (1) Le responsable ingénierie seul. ; (2) Attendre le connecteur Codex. | lot 2b |
+| ING-34 | **Destinataires des propositions de diffusion** | Les membres de l'équipe publiée par Keystone dont l'activité est « Responsable ingénierie ». | Toutes les personnes ayant le rôle `Ingenium.EngineeringLead` dans Clavis. | — |
+| ING-35 | **Clôture d'un contrôle de cohérence** | Le responsable ingénierie (ING-19) ; les ingénieurs de la discipline le prennent en charge ou le renvoient à leur outil. | Aussi l'ingénieur de la discipline responsable. | — |
+
 ### Données à fournir
 
 Données à fournir : détail et forme dans `docs/DONNEES.md`.

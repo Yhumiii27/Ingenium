@@ -5,12 +5,12 @@ import { Callout } from '@/components/app/Callout';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { ApprovalsView } from '@/features/tasks/views';
 import { businessToday } from '@/server/clock';
-import { suiteTasksOf } from '@/server/dal/tasks';
+import { allTasksOf } from '@/server/dal/tasks';
 import { getI18n, getViewer } from '@/server/session';
 
 export default async function MyApprovalsPage() {
   const [{ t }, viewer, today] = await Promise.all([getI18n(), getViewer(), businessToday()]);
-  const tasks = await suiteTasksOf(viewer, today);
+  const tasks = await allTasksOf(viewer, today);
   return (
     <>
       <PageHeader screen="approvals" />

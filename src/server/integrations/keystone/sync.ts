@@ -92,6 +92,10 @@ export async function syncKeystone(db: DB, opts: { mode: ConnectorMode; requeste
     const rows = await readSource(db, opts.mode);
     await db.transaction(async (tx) => writeMirror(tx, rows, opts.mode === 'views' ? 'keystone' : 'simulation', startedAt));
     result = { outcome: 'ok', projects: rows.projects.length, members: rows.members.length, message: opts.mode === 'simulation' ? 'Simulated Keystone (demonstration data set)' : null };
+    // While Keystone holds the engineering register, its mirror follows Keystone (lot 2a, docs/spec/06); never after the switch-over.
+    const { refreshRegisterMirror } = await import('./register');
+    const { businessToday } = await import('@/server/clock');
+    await refreshRegisterMirror(db, { mode: opts.mode, today: await businessToday(), now: startedAt });
   } catch (e) {
     log.warn('Keystone not read', { component: 'keystone', error: e instanceof Error ? e.message : String(e) });
     result = { outcome: 'unavailable', projects: 0, members: 0, message: 'Keystone views not readable (grant of Matrix missing or view absent)' };

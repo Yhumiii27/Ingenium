@@ -14,13 +14,13 @@ import { projectLabel } from '@/domain/vocab';
 import { authMode } from '@/server/auth/config';
 import { businessToday } from '@/server/clock';
 import { projectsInScope } from '@/server/dal/projects';
-import { suiteTasksOf } from '@/server/dal/tasks';
+import { allTasksOf } from '@/server/dal/tasks';
 import { DEMO_PERSONAS, getI18n, getTheme, getViewer } from '@/server/session';
 import { initialsOf } from '@/server/viewer';
 
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
   const [viewer, today, { lang }, theme, jar] = await Promise.all([getViewer(), businessToday(), getI18n(), getTheme(), cookies()]);
-  const [projects, tasks] = await Promise.all([projectsInScope(viewer), suiteTasksOf(viewer, today)]);
+  const [projects, tasks] = await Promise.all([projectsInScope(viewer), allTasksOf(viewer, today)]);
   const entra = authMode() === 'entra';
   const personas = entra ? [] : DEMO_PERSONAS.map((p) => ({ role: p.role, name: p.name, initials: initialsOf(p.name) }));
   const folded = (jar.get('ingenium-nav')?.value ?? '').split(',').filter(Boolean);

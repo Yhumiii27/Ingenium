@@ -56,7 +56,7 @@ describe('parseConfig', () => {
     const r = parse({ NODE_ENV: 'production', INGENIUM_CLOCK: '2026-10-22' });
     expect(r.errors).toEqual([]);
     expect(r.config.log.format).toBe('json');
-    expect(vars(r.warnings)).toEqual(['NEXT_PUBLIC_KEYSTONE_URL', 'NEXT_PUBLIC_CODEX_URL', 'NEXT_PUBLIC_VIGIE_URL', 'INGENIUM_AUTH', 'INGENIUM_CLOCK']);
+    expect(vars(r.warnings)).toEqual(['NEXT_PUBLIC_KEYSTONE_URL', 'NEXT_PUBLIC_CODEX_URL', 'NEXT_PUBLIC_VIGIE_URL', 'INGENIUM_AUTH', 'INGENIUM_PUBLIC_URL', 'INGENIUM_CLOCK']);
   });
 
   it('production with the production data set refuses the demo mode', () => {
