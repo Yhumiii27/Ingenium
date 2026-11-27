@@ -13,7 +13,7 @@
 | --- | --- | --- | --- |
 | P-1 | 27 nov. 2026 | Des éléments d'ingénierie sortent de Keystone pour un outil dédié aux équipes d'ingénierie. | propriétaire |
 | ING-01 | 27 nov. 2026 | Nom : **Ingenium** (« talent, invention », racine d'« ingénieur ») — code, schéma `ingenium`, rôle `ingenium_app`. | réponse en séance |
-| ING-02 | 27 nov. 2026 | Dépôt privé `Yhumiii27/ingenium` créé par le propriétaire (branche `main`), ajouté aux sessions. | propriétaire |
+| ING-02 | 27 nov. 2026 | Dépôt privé `Yhumiii27/Ingenium` créé par le propriétaire (branche `main`), ajouté aux sessions. | propriétaire |
 | P-2 | 27 nov. 2026 | La suite s'appelle **Atrium** (Norma 3.0.0) ; aucun fichier ne nomme l'entreprise ni une ancienne appellation de la suite. | propriétaire |
 | P-3 | 27 nov. 2026 | Tronc commun des menus dans chaque outil : Accueil propre à l'outil, Mes tâches (liste, kanban, calendrier), Mes approbations — avec les tâches et approbations de toute la suite —, puis un ou deux menus propres ; pour Ingenium : Mes projets, Référentiel technique (Norma 3.1.0, `COQUE.md` § 2 bis). | propriétaire |
 | P-4 | 27 nov. 2026 | Interface web seule au démarrage ; les applications locales viennent plus tard. | propriétaire (reste à faire de la suite) |

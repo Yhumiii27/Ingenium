@@ -24,7 +24,7 @@ Chaque livraison : branche, PR fusionnée une fois la CI verte. Reste à faire :
 
 ## Mise en service (à faire par le propriétaire, avec Matrix et Clavis)
 
-1. **Coolify** : créer l'application `ingenium` (type Dockerfile, dépôt `Yhumiii27/ingenium`, branche `main`), domaine
+1. **Coolify** : créer l'application `ingenium` (type Dockerfile, dépôt `Yhumiii27/Ingenium`, branche `main`), domaine
    `ingenium.projectdirection.fr` (supposé sur le modèle des autres outils), authentification HTTP de Coolify pendant la
    bêta, comme Modulus. Rien à déployer avant la livraison 1.
 2. **Matrix** : rôle `ingenium_app` et schéma `ingenium` sur le serveur commun, liens de lecture (brouillon DI-M1).

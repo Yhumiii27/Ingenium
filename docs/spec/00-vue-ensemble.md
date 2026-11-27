@@ -56,7 +56,7 @@ lus dans `clavis.pub_acces` ; Ingenium applique en plus un périmètre par proje
 | --- | --- |
 | Code, schéma | `ingenium` |
 | Rôle PostgreSQL | `ingenium_app` (créé par Matrix) |
-| Dépôt | `Yhumiii27/ingenium` |
+| Dépôt | `Yhumiii27/Ingenium` |
 | Ports (Mac du propriétaire) | 4000 (développement), 4010 (tests) |
 | Adresse | `ingenium.projectdirection.fr` (application Coolify, comme les autres outils) |
 | Connexion | Clavis : `ENTRA_ISSUER`, `INGENIUM_ACCESS_FROM_CLAVIS=on` |

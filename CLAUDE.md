@@ -19,7 +19,7 @@ technical file. It is built by taking the engineering elements out of Keystone (
   sent without the owner's « validé »), `docs/DONNEES.md` (data expected, ING-D1 to ING-D5), `docs/ANALYSE-KEYSTONE.md`
   (inventory of Keystone's engineering screens, tables and `pub_` views). **No code yet**: delivery 1 (platform) comes after
   the owner has read the framing.
-- Decided (27 Nov 2026): name **Ingenium** (ING-01), repository `Yhumiii27/ingenium` created by the owner (ING-02),
+- Decided (27 Nov 2026): name **Ingenium** (ING-01), repository `Yhumiii27/Ingenium` created by the owner (ING-02),
   registered in Norma 3.1.0 (code `ingenium`, schema `ingenium`, role `ingenium_app`, ports 4000 / 4010, address
   `ingenium.projectdirection.fr`, logo `ToolLogo code="ingenium"`). Web only at first; local apps later.
 - **Owner's questions**: Ingenium has **no questionnaire page of its own**. Its questions are in Norma's

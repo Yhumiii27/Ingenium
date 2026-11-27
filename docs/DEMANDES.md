@@ -39,7 +39,7 @@
 - **Demande** :
   1. `registre/outils.json` : une ligne `ingenium` (nom Ingenium ; `role_metier` « Ingénierie : registre des disciplines,
      P&ID, référentiel technique des articles, nomenclatures d'ingénierie, plans, pack et dossier technique » ; dépôt
-     `Yhumiii27/ingenium` ; schéma `ingenium` ; rôle `ingenium_app` ; ports `dev` 4000, `tests` 4010 ; Clavis
+     `Yhumiii27/Ingenium` ; schéma `ingenium` ; rôle `ingenium_app` ; ports `dev` 4000, `tests` 4010 ; Clavis
      `ENTRA_ISSUER`, `INGENIUM_ACCESS_FROM_CLAVIS=on` ; commits en anglais) ;
   2. `REGLES.md` § 1 : la ligne du tableau ;
   3. `charte/logos/ingenium.svg` et le code `ingenium` de `ToolLogo` ;

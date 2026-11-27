@@ -38,7 +38,7 @@
 
 | Qui | Quoi |
 | --- | --- |
-| Propriétaire | nom (ING-01) et dépôt `Yhumiii27/ingenium` (ING-02) **faits le 27 novembre 2026** ; répond aux questions de la page « Suivi Atrium » (périmètre, équipe pilote, calendrier) ; crée l'application Coolify `ingenium.projectdirection.fr` |
+| Propriétaire | nom (ING-01) et dépôt `Yhumiii27/Ingenium` (ING-02) **faits le 27 novembre 2026** ; répond aux questions de la page « Suivi Atrium » (périmètre, équipe pilote, calendrier) ; crée l'application Coolify `ingenium.projectdirection.fr` |
 | Norma | **fait en 3.1.0** : ligne du registre, tableau § 1 de `REGLES.md`, logo et `ToolLogo`, tronc commun des menus, `reste-a-faire/ingenium.json`, ING-01 et ING-02 décidées |
 | Matrix | rôle `ingenium_app`, schéma `ingenium` (créé par Matrix, aucune migration ne crée de schéma) dans la base commune ; liens de lecture de la phase 1 |
 | Clavis | application `ingenium` : catalogue de rôles (`ROLE_CATALOGUE`, `KNOWN_APPS` de `src/domain/app-roles.ts`), correspondance des niveaux, profils (ingénieur, projeteur), `npm run oidc:client -- ingenium <adresse de retour>` |
