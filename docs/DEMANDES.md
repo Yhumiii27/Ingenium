@@ -14,7 +14,7 @@
 | --- | --- | --- | --- | --- |
 | DI-N1 | Norma | inscrire l'outil (registre, REGLES § 1, logo, reste à faire) — **faite** (Norma 3.1.0, PR Norma#20) | 0 | ING-01, ING-02 |
 | DI-C1 | Clavis | application, rôles, profils, client OpenID Connect | 0 | ING-01, ING-19 |
-| DI-M1 | Matrix | rôle `ingenium_app`, schéma, liens de lecture de base | 0–1 | ING-01 |
+| DI-M1 | Matrix | rôle `ingenium_app`, schéma, liens de lecture de base, journal — **envoyée** (27 novembre 2026) | 0–1 | ING-01 |
 | DI-K1 | Keystone | gel des fonctions d'ingénierie, points transférés | 0 | ING-03 |
 | DI-K2 | Keystone | requêtes de référence des vues de reprise | 1 | ING-26 |
 | DI-K3 | Keystone | vue durable `pub_equipements_projet` | 1 | R-185 |
@@ -64,6 +64,13 @@
 - **Sans elle** : personne ne peut se connecter à Ingenium hors démonstration.
 
 ## DI-M1 · Matrix — Rôle, schéma et liens de lecture de base
+
+- **État** : validée par le propriétaire le 27 novembre 2026 (« validé pour DI-M1 ») ; envoyée à Matrix le même jour (entrée
+  DI-M1 de son `REQUESTS.md`, décision M-29 de Matrix). Côté dépôt de Matrix : rôle et schéma dans le socle et
+  `infra/postgres/ajouts/ingenium.sql` pour le serveur en service ; 16 liens préparés (tous sauf les quatre ci-dessous) ;
+  `ingenium.pub_journal` (contrat D18) au dépôt des publications. **En attente de leur publication** : `vigie.pub_etudes_securite`,
+  `modulus.pub_catalogue_machines`, `matrix.pub_taches`, `matrix.pub_taches_sources`. Reste l'application sur le serveur
+  en service (lignes 1.6 et 6.18 de `docs/mise-en-service.md` de Matrix).
 
 - **Dépôt** : `Yhumiii27/Matrix`.
 - **Demande** :
