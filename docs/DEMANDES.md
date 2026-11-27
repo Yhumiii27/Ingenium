@@ -73,8 +73,11 @@
      `keystone.pub_jalons_projets`, `keystone.pub_activites`, `keystone.pub_articles`, `keystone.pub_nomenclatures`,
      `keystone.pub_pack_ingenierie`, `codex.pub_documents`, `vigie.pub_ordres_modification`, `vigie.pub_eco_approbations`,
      `vigie.pub_eco_effectivite`, `vigie.pub_demandes_recues`, `vigie.pub_etudes_securite`,
-     `modulus.pub_catalogue_machines`, `clavis.pub_acces`, `clavis.pub_personnes`, `matrix.pub_sites`, `matrix.pub_filiales` ;
-     raison commune : affichage et contrôle des données d'ingénierie, jamais de copie durable hors des miroirs en lecture.
+     `modulus.pub_catalogue_machines`, `clavis.pub_acces`, `clavis.pub_personnes`, `matrix.pub_sites`, `matrix.pub_filiales`,
+     `matrix.pub_taches`, `matrix.pub_taches_sources` (ajoutés à la livraison 1 : Mes tâches et Mes approbations de toute la
+     suite) ; raison commune : affichage et contrôle des données d'ingénierie, jamais de copie durable hors des miroirs en lecture ;
+  3. publication `ingenium.pub_journal` (contrat D18, lecteur `matrix_app`) d'après la requête de référence de
+     `src/server/publications/definitions.ts` (livraison 1).
 - **Raison** : Matrix décide de tout accès entre outils (M-17, M-18).
 - **Sans elle** : Ingenium fonctionne seulement sur son jeu de démonstration (sources « indisponibles »).
 

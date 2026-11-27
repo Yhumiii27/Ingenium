@@ -14,11 +14,25 @@ technical file. It is built by taking the engineering elements out of Keystone (
 
 ## Where the project stands
 
-- **Delivery 0 (framing) is in progress** (27 Nov 2026): `docs/spec/00`–`06`, `docs/DECISIONS.md` (decisions taken and
-  open questions with their default answer), `docs/PLAN.md`, `docs/DEMANDES.md` (drafts to the other tools: nothing is
-  sent without the owner's « validé »), `docs/DONNEES.md` (data expected, ING-D1 to ING-D5), `docs/ANALYSE-KEYSTONE.md`
-  (inventory of Keystone's engineering screens, tables and `pub_` views). **No code yet**: delivery 1 (platform) comes after
-  the owner has read the framing.
+- **Delivery 0 (framing) is done** (27 Nov 2026): `docs/spec/00`–`06`, `docs/DECISIONS.md` (decisions taken and open
+  questions with their default answer), `docs/PLAN.md`, `docs/DEMANDES.md` (drafts to the other tools: nothing is sent
+  without the owner's « validé »), `docs/DONNEES.md` (data expected, ING-D1 to ING-D5), `docs/ANALYSE-KEYSTONE.md`.
+- **Delivery 1 (platform) is built** (27 Nov 2026, owner: « oui lance 1 »; `docs/DELIVERY-1.md`, `docs/SOCLE.md`): platform
+  from Modulus (`0204c68` + `61048a8`), PostgreSQL only, schema `ingenium` (`src/server/db/schema/`: platform tables,
+  `disciplines`, mirrors `project_mirror` / `team_mirror` written only by the Keystone connector, `sync_runs`), migrations
+  `drizzle/` (audit trail append-only by trigger), sign-in through Clavis and roles read in `clavis.pub_acces`
+  (`INGENIUM_ACCESS_FROM_CLAVIS`, fail closed; demo « View as »), roles `src/config/roles.ts` (Clavis keys
+  `Ingenium.EngineeringLead`, `Engineer`, `Designer`, `DocumentController`, `Reader`, `Admin`), rights and project scope
+  `src/domain/rights.ts` + `src/server/dal/projects.ts` (outside the scope = 404), common shell of Norma 3.1 with the common
+  block `BaseNav` (Home « Ma discipline », My tasks, My approvals, My projects, Technical reference), sections Project
+  (project switcher) / Technical reference / Administration; screen registry `src/config/screens.ts` (screens of later
+  deliveries are navigable placeholders, `src/config/screen-content.ts`); My tasks / My approvals with the charter's
+  `MyTasks` / `MyApprovals` on `matrix.pub_taches` (`INGENIUM_SUITE_TASKS` off | simulation | views,
+  `src/server/integrations/matrix/tasks.ts`); Keystone connector (`INGENIUM_KEYSTONE`, `src/server/integrations/keystone/`,
+  job `keystone-sync`, « Read Keystone now » on `/admin/activity`); API skeleton `/api/v1/` (`src/domain/api.ts`); reference
+  query `ingenium.pub_journal` (`src/server/publications/definitions.ts`, no `pub_` view in a migration); demo data set
+  `INGENIUM_SEED=demo` (Keystone's demo project codes HLT-026, NDC-031, EWA-051, PRS-038, WSA-044; people of demo.example).
+  Next: delivery 2 (engineering register, P&ID, drawings) once ING-04, ING-05, ING-09, ING-20, ING-21, ING-26 are answered.
 - Decided (27 Nov 2026): name **Ingenium** (ING-01), repository `Yhumiii27/Ingenium` created by the owner (ING-02),
   registered in Norma 3.1.0 (code `ingenium`, schema `ingenium`, role `ingenium_app`, ports 4000 / 4010, address
   `ingenium.projectdirection.fr`, logo `ToolLogo code="ingenium"`). Web only at first; local apps later.
@@ -61,11 +75,19 @@ technical file. It is built by taking the engineering elements out of Keystone (
   registry.
 - Commit messages in English.
 
-## Checks
+## Setup and checks
 
 ```bash
-node norma/outils/norma.mjs verifier   # the Norma copy is intact (CI)
+npm ci && npm run db:local && npm run db:migrate   # .env.local: see .env.example (PostgreSQL only)
+npx next typegen && npm run typecheck && npm run lint && npm test && npm run norma:check
+npm run build && npm run test:smoke                 # against `next start --port 4010`
+npm run dev                                         # http://localhost:4000 (demo: "View as")
 ```
+
+- Tests get a fresh database per file (`src/test/db.ts`, `INGENIUM_TEST_ADMIN_URL`) and never drop it: never run `DROP DATABASE`.
+- UI strings are English source strings translated through `src/i18n` (French by default; `completeness.test.ts`,
+  `registries.test.ts`); typed text and data are shown as typed, never through `t()`.
+- Every Server Function validates its input and the viewer's rights server-side; a project outside the viewer's scope is a 404.
 
 Refresh the Norma copy from a clone of Norma: `node <Norma clone>/outils/norma.mjs copier` (records the version in
 `norma/MANIFEST.json`).
