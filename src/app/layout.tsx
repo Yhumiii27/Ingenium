@@ -1,0 +1,25 @@
+import type { Metadata } from 'next';
+import '@norma/charte/nocturne.css';
+import '@norma/charte/touch.css';
+import '@norma/charte/coque.css';
+import './globals.css';
+import { interClassName } from '@/fonts/inter';
+import { I18nProvider } from '@/i18n/client';
+import { getLang, getTheme } from '@/server/session';
+
+export const metadata: Metadata = {
+  title: 'Ingenium',
+  description: 'Ingenium — engineering of the Atrium suite: engineering register by discipline, P&ID, technical reference, engineering BOM, drawings, pack and technical file',
+};
+
+export default async function RootLayout({ children }: LayoutProps<'/'>) {
+  const [lang, theme] = await Promise.all([getLang(), getTheme()]);
+  return (
+    // The display theme (Norma 3.0: cookie atrium-theme, the former name read as a fallback, dark by default) is set at render, so the page never flashes.
+    <html lang={lang} data-theme={theme} className={interClassName}>
+      <body>
+        <I18nProvider lang={lang}>{children}</I18nProvider>
+      </body>
+    </html>
+  );
+}

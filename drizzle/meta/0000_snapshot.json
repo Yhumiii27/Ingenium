@@ -1,0 +1,700 @@
+{
+  "id": "0d92ca04-091d-401c-b898-023db24e2ac3",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "ingenium.app_settings": {
+      "name": "app_settings",
+      "schema": "ingenium",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by_name": {
+          "name": "updated_by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "app_settings_key_check": {
+          "name": "app_settings_key_check",
+          "value": "\"ingenium\".\"app_settings\".\"key\" ~ '^[a-z][a-z0-9_.-]{1,63}$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.audit_entries": {
+      "name": "audit_entries",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "occurred_at": {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_user_id": {
+          "name": "actor_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actor_name": {
+          "name": "actor_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_role": {
+          "name": "actor_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "object_ref": {
+          "name": "object_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "change": {
+          "name": "change",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "area": {
+          "name": "area",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "before": {
+          "name": "before",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "after": {
+          "name": "after",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "audit_entries_occurred_at_idx": {
+          "name": "audit_entries_occurred_at_idx",
+          "columns": [
+            {
+              "expression": "occurred_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "audit_entries_entity_idx": {
+          "name": "audit_entries_entity_idx",
+          "columns": [
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "audit_entries_actor_user_id_users_id_fk": {
+          "name": "audit_entries_actor_user_id_users_id_fk",
+          "tableFrom": "audit_entries",
+          "tableTo": "users",
+          "schemaTo": "ingenium",
+          "columnsFrom": [
+            "actor_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "audit_entries_text_check": {
+          "name": "audit_entries_text_check",
+          "value": "btrim(\"ingenium\".\"audit_entries\".\"actor_name\") <> '' and btrim(\"ingenium\".\"audit_entries\".\"object_ref\") <> '' and btrim(\"ingenium\".\"audit_entries\".\"change\") <> '' and btrim(\"ingenium\".\"audit_entries\".\"area\") <> ''"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.job_runs": {
+      "name": "job_runs",
+      "schema": "ingenium",
+      "columns": {
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "lease_until": {
+          "name": "lease_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_started_at": {
+          "name": "last_started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_finished_at": {
+          "name": "last_finished_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_status": {
+          "name": "last_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "job_runs_status_check": {
+          "name": "job_runs_status_check",
+          "value": "\"ingenium\".\"job_runs\".\"last_status\" is null or \"ingenium\".\"job_runs\".\"last_status\" in ('ok', 'error')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.users": {
+      "name": "users",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "oid": {
+          "name": "oid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_sign_in_at": {
+          "name": "last_sign_in_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_oid_unique": {
+          "name": "users_oid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "oid"
+          ]
+        },
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "users_email_check": {
+          "name": "users_email_check",
+          "value": "\"ingenium\".\"users\".\"email\" ~ '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+$' and \"ingenium\".\"users\".\"email\" = lower(\"ingenium\".\"users\".\"email\")"
+        },
+        "users_name_check": {
+          "name": "users_name_check",
+          "value": "btrim(\"ingenium\".\"users\".\"name\") <> ''"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.disciplines": {
+      "name": "disciplines",
+      "schema": "ingenium",
+      "columns": {
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "disciplines_code_check": {
+          "name": "disciplines_code_check",
+          "value": "\"ingenium\".\"disciplines\".\"code\" in ('process', 'mechanical', 'electrical', 'automation')"
+        },
+        "disciplines_label_check": {
+          "name": "disciplines_label_check",
+          "value": "btrim(\"ingenium\".\"disciplines\".\"label\") <> ''"
+        },
+        "disciplines_position_check": {
+          "name": "disciplines_position_check",
+          "value": "\"ingenium\".\"disciplines\".\"position\" between 1 and 99"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.project_mirror": {
+      "name": "project_mirror",
+      "schema": "ingenium",
+      "columns": {
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "design_office_number": {
+          "name": "design_office_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client": {
+          "name": "client",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phase": {
+          "name": "phase",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "open": {
+          "name": "open",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "synced_at": {
+          "name": "synced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "project_mirror_code_check": {
+          "name": "project_mirror_code_check",
+          "value": "\"ingenium\".\"project_mirror\".\"code\" ~ '^[A-Z]{3}-[0-9]{3}$'"
+        },
+        "project_mirror_number_check": {
+          "name": "project_mirror_number_check",
+          "value": "\"ingenium\".\"project_mirror\".\"design_office_number\" is null or \"ingenium\".\"project_mirror\".\"design_office_number\" ~ '^#[0-9]{3,4}$'"
+        },
+        "project_mirror_name_check": {
+          "name": "project_mirror_name_check",
+          "value": "btrim(\"ingenium\".\"project_mirror\".\"name\") <> ''"
+        },
+        "project_mirror_source_check": {
+          "name": "project_mirror_source_check",
+          "value": "\"ingenium\".\"project_mirror\".\"source\" in ('keystone', 'simulation')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.sync_runs": {
+      "name": "sync_runs",
+      "schema": "ingenium",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rows": {
+          "name": "rows",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requested_by": {
+          "name": "requested_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "sync_runs_started_idx": {
+          "name": "sync_runs_started_idx",
+          "columns": [
+            {
+              "expression": "started_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "sync_runs_source_check": {
+          "name": "sync_runs_source_check",
+          "value": "\"ingenium\".\"sync_runs\".\"source\" in ('keystone')"
+        },
+        "sync_runs_outcome_check": {
+          "name": "sync_runs_outcome_check",
+          "value": "\"ingenium\".\"sync_runs\".\"outcome\" in ('ok', 'error', 'unavailable')"
+        },
+        "sync_runs_rows_check": {
+          "name": "sync_runs_rows_check",
+          "value": "\"ingenium\".\"sync_runs\".\"rows\" >= 0"
+        },
+        "sync_runs_order_check": {
+          "name": "sync_runs_order_check",
+          "value": "\"ingenium\".\"sync_runs\".\"finished_at\" >= \"ingenium\".\"sync_runs\".\"started_at\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ingenium.team_mirror": {
+      "name": "team_mirror",
+      "schema": "ingenium",
+      "columns": {
+        "project_code": {
+          "name": "project_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assignment": {
+          "name": "assignment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "employee_number": {
+          "name": "employee_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "person_name": {
+          "name": "person_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "discipline": {
+          "name": "discipline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "activity": {
+          "name": "activity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "synced_at": {
+          "name": "synced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "team_mirror_email_idx": {
+          "name": "team_mirror_email_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "team_mirror_project_code_project_mirror_code_fk": {
+          "name": "team_mirror_project_code_project_mirror_code_fk",
+          "tableFrom": "team_mirror",
+          "tableTo": "project_mirror",
+          "schemaTo": "ingenium",
+          "columnsFrom": [
+            "project_code"
+          ],
+          "columnsTo": [
+            "code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "team_mirror_project_code_assignment_pk": {
+          "name": "team_mirror_project_code_assignment_pk",
+          "columns": [
+            "project_code",
+            "assignment"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "team_mirror_assignment_check": {
+          "name": "team_mirror_assignment_check",
+          "value": "btrim(\"ingenium\".\"team_mirror\".\"assignment\") <> ''"
+        },
+        "team_mirror_name_check": {
+          "name": "team_mirror_name_check",
+          "value": "btrim(\"ingenium\".\"team_mirror\".\"person_name\") <> ''"
+        },
+        "team_mirror_email_check": {
+          "name": "team_mirror_email_check",
+          "value": "\"ingenium\".\"team_mirror\".\"email\" is null or (\"ingenium\".\"team_mirror\".\"email\" ~ '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+$' and \"ingenium\".\"team_mirror\".\"email\" = lower(\"ingenium\".\"team_mirror\".\"email\"))"
+        },
+        "team_mirror_discipline_check": {
+          "name": "team_mirror_discipline_check",
+          "value": "\"ingenium\".\"team_mirror\".\"discipline\" is null or \"ingenium\".\"team_mirror\".\"discipline\" in ('process', 'mechanical', 'electrical', 'automation')"
+        },
+        "team_mirror_source_check": {
+          "name": "team_mirror_source_check",
+          "value": "\"ingenium\".\"team_mirror\".\"source\" in ('keystone', 'simulation')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

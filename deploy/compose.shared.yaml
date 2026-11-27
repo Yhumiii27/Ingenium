@@ -1,0 +1,116 @@
+# Ingenium on Coolify on the SHARED PostgreSQL server of the Atrium suite (decision M-01) — a "Docker Compose" resource, base
+# directory `/`, compose file `/deploy/compose.shared.yaml` (same shape as Arche's). Runbook in French: deploy/README.md.
+#
+#   (no db)  the database is Matrix's server (its PostgreSQL resource, repository Yhumiii27/Matrix, infra/postgres/): role
+#            ingenium_app and schema `ingenium` exist there; INGENIUM_APP_PASSWORD is the value set on THAT resource (without it
+#            the role is NOLOGIN: Matrix's socle gives it the password once the variable is set and 01-base-et-roles.sql replayed)
+#   migrate  one-shot `npm run db:migrate` before every start (migrations, then the seed of an EMPTY schema: INGENIUM_SEED must
+#            be set — demo for the beta, production for reference data only); left out of Coolify's health status
+#   app      the web server (port 4000, behind Coolify's proxy and TLS); starts once the migration has succeeded. Its data
+#            folder /data (INGENIUM_DATA_DIR) is the named volume ingenium-data
+#   worker   `npm run worker`: backups of the schema into the ingenium-backups volume, hourly read of Keystone's projects,
+#            daily declaration to Matrix
+#
+# Network: every service joins the external Docker network `coolify` (ATRIUM_DOCKER_NETWORK), where Matrix's server answers
+# under its fixed alias (ATRIUM_PG_HOST). Leave the resource's "Predefined network" option unconnected.
+#
+# Server names (Norma 3.0): the shared server is renamed by Matrix in one separate operation (database and host alias take the
+# suite's name `atrium`, `atrium-postgres`). Ingenium names neither: ATRIUM_PG_HOST and ATRIUM_PG_DB are required on the
+# resource — today's names of the server until Matrix announces the operation done, then atrium-postgres and atrium (redeploy,
+# nothing else changes).
+#
+# HTTP basic authentication (mandatory while INGENIUM_AUTH=demo: "View as" any role, the IT administrator included). Coolify
+# v4.4.x has no basic-auth setting for Docker Compose resources, but it attaches every Traefik middleware DEFINED in a
+# service's labels to the routers it generates for that service's domain. In Coolify: (1) "Escape special characters in
+# labels" OFF, (2) INGENIUM_BASIC_AUTH_USERS (`htpasswd -nbB <user> <password>`) created with "Interpolation: Literal".
+# Check: `curl -sI https://<domain>/` without credentials answers 401. Fail-closed: left escaped, every request is refused.
+#
+# The key `exclude_from_hc` is Coolify's: remove it to run this file with plain `docker compose`, from the repository root
+# with `--project-directory .` (local test: docker network create coolify, then Matrix's server on that network with the
+# alias of ATRIUM_PG_HOST).
+
+x-ingenium-env: &ingenium-env
+  NODE_ENV: production
+  # Host and database: today's names by default (before Matrix's rename), switched by ATRIUM_PG_HOST / ATRIUM_PG_DB.
+  DATABASE_URL: postgresql://ingenium_app:${INGENIUM_APP_PASSWORD:?INGENIUM_APP_PASSWORD is required (the value set on the shared server's resource)}@${ATRIUM_PG_HOST:?ATRIUM_PG_HOST is required (host of the shared server)}:${ATRIUM_PG_PORT:-5432}/${ATRIUM_PG_DB:?ATRIUM_PG_DB is required (database of the shared server)}
+  DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-}
+  INGENIUM_SEED: ${INGENIUM_SEED:?INGENIUM_SEED is required (demo or production)}
+  INGENIUM_AUTH: ${INGENIUM_AUTH:-}
+  INGENIUM_SESSION_SECRET: ${INGENIUM_SESSION_SECRET:-}
+  INGENIUM_SESSION_HOURS: ${INGENIUM_SESSION_HOURS:-}
+  INGENIUM_CLOCK: ${INGENIUM_CLOCK:-}
+  INGENIUM_ACCESS_FROM_CLAVIS: ${INGENIUM_ACCESS_FROM_CLAVIS:-}
+  ENTRA_ISSUER: ${ENTRA_ISSUER:-}
+  ENTRA_TENANT_ID: ${ENTRA_TENANT_ID:-}
+  ENTRA_CLIENT_ID: ${ENTRA_CLIENT_ID:-}
+  ENTRA_CLIENT_SECRET: ${ENTRA_CLIENT_SECRET:-}
+  ENTRA_REDIRECT_URI: ${ENTRA_REDIRECT_URI:-}
+  ENTRA_POST_LOGOUT_REDIRECT_URI: ${ENTRA_POST_LOGOUT_REDIRECT_URI:-}
+  NEXT_PUBLIC_KEYSTONE_URL: ${NEXT_PUBLIC_KEYSTONE_URL:-}
+  NEXT_PUBLIC_CODEX_URL: ${NEXT_PUBLIC_CODEX_URL:-}
+  NEXT_PUBLIC_VIGIE_URL: ${NEXT_PUBLIC_VIGIE_URL:-}
+  LOG_LEVEL: ${LOG_LEVEL:-}
+  MATRIX_URL: ${MATRIX_URL:-}
+  MATRIX_TOKEN: ${MATRIX_TOKEN:-}
+  INGENIUM_BACKUP_EVERY_MIN: ${INGENIUM_BACKUP_EVERY_MIN:-}
+  INGENIUM_BACKUP_RETENTION_DAYS: ${INGENIUM_BACKUP_RETENTION_DAYS:-}
+
+services:
+  migrate:
+    image: ingenium:local
+    pull_policy: never
+    command: ["npm", "run", "db:migrate"]
+    environment: *ingenium-env
+    networks: [default, partage]
+    restart: "no"
+    exclude_from_hc: true
+
+  app:
+    image: ingenium:local
+    build:
+      # Relative to the PROJECT directory: Coolify runs `docker compose --project-directory <clone>/<base directory>`, so
+      # with the base directory `/` the context is the repository root (locally: --project-directory . from the root).
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_KEYSTONE_URL: ${NEXT_PUBLIC_KEYSTONE_URL:-}
+        NEXT_PUBLIC_CODEX_URL: ${NEXT_PUBLIC_CODEX_URL:-}
+        NEXT_PUBLIC_VIGIE_URL: ${NEXT_PUBLIC_VIGIE_URL:-}
+    restart: unless-stopped
+    environment: *ingenium-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [default, partage]
+    expose:
+      - "4000"
+    volumes:
+      - ingenium-data:/data
+    labels:
+      - "traefik.http.middlewares.ingenium-basic-auth.basicauth.users=${INGENIUM_BASIC_AUTH_USERS:?INGENIUM_BASIC_AUTH_USERS is required (htpasswd -nbB user password)}"
+
+  worker:
+    image: ingenium:local
+    pull_policy: never
+    command: ["npm", "run", "worker"]
+    environment:
+      <<: *ingenium-env
+      INGENIUM_BACKUP_DIR: /backups
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [default, partage]
+    restart: unless-stopped
+    volumes:
+      - ingenium-backups:/backups
+    exclude_from_hc: true
+
+volumes:
+  ingenium-data:
+  ingenium-backups:
+
+networks:
+  # Docker network of the tools: "coolify" in Coolify; locally, create it once (docker network create coolify).
+  partage:
+    name: ${ATRIUM_DOCKER_NETWORK:-coolify}
+    external: true

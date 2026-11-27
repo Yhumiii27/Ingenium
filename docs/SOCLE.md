@@ -1,0 +1,18 @@
+# Ingenium — origine du socle
+
+Ingenium ne recopie que la **plateforme** des outils frères, jamais leurs modules métier (règle de la suite, `CLAUDE.md`,
+ING-28). Source : **Modulus** `Yhumiii27/Modulus`, `main` `0204c68` plus le commit `61048a8` de sa branche
+`claude/quirky-brown-c7af5m` (« Adopt the Atrium suite name and Norma 3.1.0 » : lecture du thème par `themeFromCookies`, noms
+de la suite Atrium), le 27 novembre 2026.
+
+| Pièce | Origine | Commit | Adaptation |
+| --- | --- | --- | --- |
+| Plateforme : configuration validée (`src/server/config`), journal du serveur (`src/server/log`), base PostgreSQL seule (`src/server/db` : pool, migrateur sans `CREATE SCHEMA`, verrou d'écriture, transactions rejouées, fourniture locale `db:local`), journal d'audit en ajout seul (déclencheur, `drizzle/0001_append_only.sql`), tâches planifiées (`src/server/jobs`), sauvegardes, santé (`/api/health`), en-têtes de sécurité et CSP à nonce (`src/proxy.ts`, `src/server/http`), i18n (`src/i18n`, français par défaut, test de complétude), horloge métier, tests sur une base neuve par fichier (`src/test/db.ts`, jamais de `DROP DATABASE`), test de fumée, journal `/journal`, CI | Modulus (lui-même Vector → Clavis `5a6026b`) | `0204c68` + `61048a8` | renommage `modulus` → `ingenium`, ports 4000 / 4010, base locale `ingenium_dev` ; métier de Modulus retiré (catalogue, prix, configurateur, affaires, offres, cotations, configurations vendues, savoir-faire, questionnaires, exports métier) ; compteurs annuels de références retirés ; variables `INGENIUM_KEYSTONE` et `INGENIUM_SUITE_TASKS` ajoutées |
+| Connexion par Clavis en client OpenID Connect (`src/server/auth/*`) et lecture des droits `clavis.pub_acces` (`src/server/integrations/clavis/access.ts`) | Modulus (repris de Vector, de Crucible) | `0204c68` | `INGENIUM_AUTH=entra` exige `INGENIUM_ACCESS_FROM_CLAVIS=on` ; rôles `Ingenium.EngineeringLead`… (clé en CamelCase lue en `engineering_lead`) ; le `Viewer` porte l'`oid` de Clavis (clé de `matrix.pub_taches`) |
+| Coque d'interface (`AppShell`, `MobileTopBar`, `Sidebar`, `PageSearch` ⌘K, `NavSection`, `PageHeader`, menu « Actions », `PrefsStack`) ; panneaux latéraux (`Folded`, `ActionForm`), `SectionCard`, `Kpi`, `KeyValueList`, `Callout`, `EmptyState` | Modulus | `0204c68` | tronc commun de Norma 3.1 (`BaseNav`, `COQUE.md` § 2 bis : Accueil, Mes tâches, Mes approbations, Mes projets, Référentiel technique) ; « Mes tâches » et « Mes approbations » par `MyTasks` / `MyApprovals` de la charte ; sections Projet (projet courant en ligne de contexte), Référentiel technique, Administration ; logo `ToolLogo code="ingenium"`, favicon copie de `norma/charte/logos/ingenium.svg` |
+| Image et démarrage en un conteneur : `Dockerfile` (Node 22, client PostgreSQL 16, `HEALTHCHECK` sur `/api/health`), `deploy/start.sh` (`INGENIUM_SINGLE_CONTAINER=on`), `deploy/compose.shared.yaml`, `.dockerignore` | Modulus (repris de Clavis `ac26fea`, `5abf331`) | `0204c68` | port 4000 ; `deploy/compose.shared.yaml` exige `ATRIUM_PG_HOST` et `ATRIUM_PG_DB` (Ingenium n'écrit aucun nom du serveur commun, ni ancien ni nouveau) |
+| Charte Nocturne, composants `@norma/charte/ds`, police Inter, règles communes, registre, dépendances | Norma `Yhumiii27/Norma` | version 3.1.0 | copie intacte dans `norma/` (`npm run norma:check`), déjà présente depuis la livraison 0 |
+
+Le métier d'Ingenium est écrit pour Ingenium : `src/domain/` (`vocab.ts`, `keystone.ts`, `rights.ts`, `api.ts`),
+`src/server/integrations/keystone/`, `src/server/integrations/matrix/tasks.ts`, `src/server/dal/projects.ts`, `src/features/`,
+`src/app/(app)/`.
